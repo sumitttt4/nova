@@ -127,4 +127,30 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom Scrollbar for Webkit */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+  }
+
+  /* Show scrollbar on hover of the container */
+  *:hover::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-700;
+  }
+
+  /* Always visible when active/clicking */
+  ::-webkit-scrollbar-thumb:active {
+    @apply bg-slate-400 dark:bg-slate-600;
+  }
 }
