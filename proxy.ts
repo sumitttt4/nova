@@ -51,7 +51,7 @@ export async function proxy(request: NextRequest) {
 
     // 3. Rate Limiting for API routes
     if (path.startsWith('/api')) {
-        const ip = request.ip || '127.0.0.1'
+        const ip = (request as any).ip || '127.0.0.1'
         const now = Date.now()
         const windowStart = now - 60000 // 1 minute window
 

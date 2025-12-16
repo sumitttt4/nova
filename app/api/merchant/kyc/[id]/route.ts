@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-    const id = params.id
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
 
     // Fetch single record logic
     return NextResponse.json({
@@ -10,8 +10,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
     })
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-    const id = params.id
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
     const body = await request.json()
 
     // Logic to update specific fields (e.g. re-upload a doc)

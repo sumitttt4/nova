@@ -40,8 +40,30 @@ export function Sidebar() {
     const { activeContext, menuItems, navigateToRoot } = useNavigation()
     const [isCollapsed, setIsCollapsed] = React.useState(false)
 
-    // Icons Map for dynamic rendering (since we store icons as components in context)
-    // but context provides functional components, so we can render them directly.
+    const [userRole, setUserRole] = React.useState("admin")
+
+    React.useEffect(() => {
+        const roleMatch = document.cookie.match(/user_role=([^;]+)/)
+        if (roleMatch) {
+            setUserRole(roleMatch[1])
+        }
+    }, [])
+
+    const getRoleLabel = () => {
+        switch (userRole) {
+            case 'seller': return 'Store Partner'
+            case 'rider': return 'Delivery Partner'
+            default: return 'Admin User'
+        }
+    }
+
+    const getRoleEmail = () => {
+        switch (userRole) {
+            case 'seller': return 'partner@bazuroo.com'
+            case 'rider': return 'rider@bazuroo.com'
+            default: return 'admin@bazuroo.com'
+        }
+    }
 
     return (
         <aside
@@ -65,7 +87,7 @@ export function Sidebar() {
                         isCollapsed && "opacity-0 w-0 hidden"
                     )}>
                         <h1 className="truncate text-base font-bold leading-none text-slate-900">Bazuroo</h1>
-                        <span className="truncate text-[10px] font-medium text-slate-500 uppercase tracking-wider">Admin Panel</span>
+                        <span className="truncate text-[10px] font-medium text-slate-500 uppercase tracking-wider">{getRoleLabel()} Console</span>
                     </div>
                 </div>
 
@@ -147,8 +169,8 @@ export function Sidebar() {
                             </Avatar>
                             {!isCollapsed && (
                                 <div className="flex flex-1 flex-col items-start text-left overflow-hidden">
-                                    <span className="truncate text-sm font-semibold text-slate-900">Admin User</span>
-                                    <span className="truncate text-xs text-slate-500">admin@bazuroo.com</span>
+                                    <span className="truncate text-sm font-semibold text-slate-900">{getRoleLabel()}</span>
+                                    <span className="truncate text-xs text-slate-500">{getRoleEmail()}</span>
                                 </div>
                             )}
                             {!isCollapsed && <ChevronsUpDown className="ml-auto h-4 w-4 text-slate-400" />}
@@ -157,8 +179,8 @@ export function Sidebar() {
                     <DropdownMenuContent className="w-64 min-w-[200px]" align="end" sideOffset={10}>
                         <DropdownMenuLabel className="font-normal">
                             <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">Admin User</p>
-                                <p className="text-xs leading-none text-muted-foreground">admin@bazuroo.com</p>
+                                <p className="text-sm font-medium leading-none">{getRoleLabel()}</p>
+                                <p className="text-xs leading-none text-muted-foreground">{getRoleEmail()}</p>
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
@@ -173,7 +195,16 @@ export function Sidebar() {
                             <span>Preferences</span>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50">
+                        <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                            onClick={() => {
+                                // Clear all potential auth cookies
+                                document.cookie = "admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+                                document.cookie = "seller_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+                                document.cookie = "rider_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+                                window.location.href = "/auth/login"
+                            }}
+                        >
                             <LogOut className="mr-2 h-4 w-4" />
                             <span>Log out</span>
                         </DropdownMenuItem>

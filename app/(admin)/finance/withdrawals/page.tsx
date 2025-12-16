@@ -144,7 +144,7 @@ export default function WithdrawalsPage() {
                                                     {txn.amount > 2000 && (
                                                         <div className="flex items-center gap-1.5 text-xs text-red-600 font-bold px-2 py-1 bg-red-50 rounded-md w-fit">
                                                             <AlertTriangle size={12} />
-                                                            Exceeds Limit (>2k)
+                                                            Exceeds Limit (&gt;2k)
                                                         </div>
                                                     )}
                                                     {isDailyLimit && (

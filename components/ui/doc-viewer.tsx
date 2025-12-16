@@ -1,14 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { Document, Page, pdfjs } from "react-pdf"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Eye, FileText, Loader2, ZoomIn, ZoomOut } from "lucide-react"
+import { Eye, FileText, ZoomIn, ZoomOut } from "lucide-react"
 import Image from "next/image"
+import dynamic from "next/dynamic"
 
-// Configure PDF worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+// Dynamic import for PDF Viewer to avoid SSR "DOMMatrix" error
+const PDFViewer = dynamic(() => import("./pdf-viewer-client"), {
+    ssr: false,
+    loading: () => <div className="p-4 text-center text-slate-500">Loading PDF Viewer...</div>
+})
 
 interface DocViewerProps {
     url?: string
@@ -20,7 +23,6 @@ interface DocViewerProps {
 export function DocViewer({ url, type, alt = "Document", aspectRatio = "video" }: DocViewerProps) {
     const [isOpen, setIsOpen] = React.useState(false)
     const [scale, setScale] = React.useState(1.0)
-    const [numPages, setNumPages] = React.useState<number | null>(null)
 
     // Fallback for missing URLs in mock mode
     if (!url) {
@@ -100,23 +102,7 @@ export function DocViewer({ url, type, alt = "Document", aspectRatio = "video" }
                         </div>
                     ) : (
                         <div className="max-w-full">
-                            <Document
-                                file={url}
-                                onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-                                loading={<div className="flex items-center gap-2"><Loader2 className="animate-spin" /> Loading PDF...</div>}
-                                error={<div className="text-red-500">Failed to load PDF. Cross-Origin Issue likely in dev.</div>}
-                            >
-                                {Array.from(new Array(numPages), (el, index) => (
-                                    <Page
-                                        key={`page_${index + 1}`}
-                                        pageNumber={index + 1}
-                                        scale={scale}
-                                        className="mb-4 shadow-lg"
-                                        renderTextLayer={false}
-                                        renderAnnotationLayer={false}
-                                    />
-                                ))}
-                            </Document>
+                            <PDFViewer url={url} scale={scale} />
                         </div>
                     )}
                 </div>

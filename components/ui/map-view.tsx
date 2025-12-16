@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+// @ts-ignore
 import Map, { Marker, Popup, Source, Layer, NavigationControl } from "react-map-gl"
 import { MapPin, Navigation } from "lucide-react"
 import "mapbox-gl/dist/mapbox-gl.css"
@@ -78,7 +79,7 @@ export function MapView({
         <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm relative" style={{ height }}>
             <Map
                 {...viewState}
-                onMove={evt => setViewState(evt.viewState)}
+                onMove={(evt: any) => setViewState(evt.viewState)}
                 style={{ width: "100%", height: "100%" }}
                 mapStyle={MAP_STYLE}
                 mapboxAccessToken={token}
@@ -92,7 +93,7 @@ export function MapView({
                         latitude={marker.lat}
                         longitude={marker.lng}
                         anchor="bottom"
-                        onClick={(e) => {
+                        onClick={(e: any) => {
                             e.originalEvent.stopPropagation()
                             marker.onClick?.()
                         }}

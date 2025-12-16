@@ -4,82 +4,119 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Card } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
-import { ShieldAlert, Zap } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, Check, Zap } from "lucide-react"
 
 export default function LoginPage() {
     const router = useRouter()
     const [isLoading, setIsLoading] = React.useState(false)
+    const [showPassword, setShowPassword] = React.useState(false)
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
 
         // Mock Login Logic
-        // In real app: Call API -> Verify Credentials -> Set Secure Cookie
         setTimeout(() => {
-            // Manually setting cookie for demo purposes (usually done by server)
+            // Clear existing cookies
+            document.cookie.split(";").forEach((c) => {
+                document.cookie = c
+                    .replace(/^ +/, "")
+                    .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+
+            // Set Admin Cookie
             document.cookie = "admin_token=mock-jwt-token; path=/"
+            document.cookie = "user_role=admin; path=/"
+
             router.push("/dashboard")
             setIsLoading(false)
         }, 1000)
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-                <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-purple-600 rounded-full blur-[128px]" />
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600 rounded-full blur-[128px]" />
-            </div>
-
-            <div className="w-full max-w-md p-6 relative z-10">
+        <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] font-sans text-[#1F2937]">
+            <div className="w-full max-w-sm px-4">
                 <div className="text-center mb-8">
-                    <div className="bg-white/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/10 backdrop-blur-md shadow-xl">
-                        <Zap className="h-8 w-8 text-yellow-400 fill-yellow-400" />
+                    <div className="bg-white mx-auto w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 mb-4">
+                        <Zap className="h-6 w-6 text-[#26BF42] fill-[#26BF42]" />
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight">Welcome Back</h1>
-                    <p className="text-slate-400 mt-2">Sign in to access the Bazuroo Admin Console.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-[#1F2937]">Bazuroo Admin Panel</h1>
+                    <p className="text-[#6B7280] text-sm mt-1">Sign in to manage operations</p>
                 </div>
 
-                <Card className="bg-white/5 border-white/10 backdrop-blur-sm p-8 rounded-2xl shadow-2xl">
-                    <form onSubmit={handleLogin} className="space-y-6">
+                <Card className="bg-white border-0 shadow-[0_4px_6px_rgba(0,0,0,0.05)] p-8 rounded-2xl ring-1 ring-gray-100">
+                    <form onSubmit={handleLogin} className="space-y-5">
                         <div className="space-y-2">
-                            <Label className="text-slate-200">Email Address</Label>
-                            <Input
-                                type="email"
-                                placeholder="admin@bazuroo.com"
-                                className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500 transition-all h-11"
-                                defaultValue="admin@bazuroo.com"
-                            />
+                            <Label className="text-[#6B7280] font-medium text-xs uppercase tracking-wide">
+                                Email Address
+                            </Label>
+                            <div className="relative group">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-[#26BF42] transition-colors" />
+                                <Input
+                                    type="email"
+                                    placeholder="admin@bazuroo.com"
+                                    className="pl-10 h-10 bg-white border-[#E5E7EB] text-[#1F2937] placeholder:text-gray-400 focus:border-[#26BF42] focus:ring-[#26BF42] rounded-lg transition-all"
+                                    defaultValue="admin@bazuroo.com"
+                                />
+                            </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-slate-200">Password</Label>
-                            <Input
-                                type="password"
-                                placeholder="••••••••"
-                                className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500 transition-all h-11"
-                                defaultValue="password"
-                            />
+                            <Label className="text-[#6B7280] font-medium text-xs uppercase tracking-wide">
+                                Password
+                            </Label>
+                            <div className="relative group">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-[#26BF42] transition-colors" />
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    className="pl-10 pr-10 h-10 bg-white border-[#E5E7EB] text-[#1F2937] placeholder:text-gray-400 focus:border-[#26BF42] focus:ring-[#26BF42] rounded-lg transition-all"
+                                    defaultValue="password"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox id="remember" className="border-[#D1D5DB] data-[state=checked]:bg-[#26BF42] data-[state=checked]:border-[#26BF42]" />
+                                <label
+                                    htmlFor="remember"
+                                    className="text-sm font-medium leading-none text-[#6B7280] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                    Remember me
+                                </label>
+                            </div>
+                            <button type="button" className="text-sm font-medium text-[#26BF42] hover:text-[#20A035] hover:underline">
+                                Forgot password?
+                            </button>
                         </div>
 
                         <Button
                             type="submit"
-                            className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-purple-500/20 transition-all"
+                            className="w-full h-10 bg-[#26BF42] hover:bg-[#20A035] text-white font-semibold text-sm rounded-lg shadow-sm hover:shadow transition-all duration-200"
                             disabled={isLoading}
                         >
                             {isLoading ? "Authenticating..." : "Sign In"}
                         </Button>
                     </form>
-
-                    <div className="mt-6 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-start gap-3">
-                        <ShieldAlert className="h-5 w-5 text-yellow-500 shrink-0 mt-0.5" />
-                        <p className="text-xs text-yellow-200/80 leading-relaxed">
-                            This is a secure restricted area. All activities are monitored and logged. Unauthorized access is prohibited.
-                        </p>
-                    </div>
                 </Card>
+
+                <p className="text-center text-xs text-[#9CA3AF] mt-6">
+                    Need access? Contact <span className="text-[#6B7280] font-medium hover:text-[#1F2937] transition-colors cursor-pointer">super admin</span>
+                </p>
             </div>
         </div>
     )

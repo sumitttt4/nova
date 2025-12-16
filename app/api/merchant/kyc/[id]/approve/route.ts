@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-    const id = params.id
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
 
     // 1. Verify all required docs are present in DB
     // 2. Update status to 'approved'

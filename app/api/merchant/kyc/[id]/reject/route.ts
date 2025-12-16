@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-    const id = params.id
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
     const { reasons } = await request.json()
 
     if (!reasons || !Array.isArray(reasons) || reasons.length === 0) {

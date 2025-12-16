@@ -55,7 +55,7 @@ import { format } from "date-fns"
 
 const ITEMS_PER_PAGE = 10
 
-export default function RiderDatabasePage() {
+function RiderDatabaseContent() {
     const { riders, updateRiderStatus } = useMockData()
 
     // URL State Management
@@ -389,4 +389,12 @@ function StatusBadge({ status }: { status: string }) {
         default:
             return <Badge variant="secondary">{status}</Badge>
     }
+}
+
+export default function RiderDatabasePage() {
+    return (
+        <React.Suspense fallback={<div className="p-8">Loading riders...</div>}>
+            <RiderDatabaseContent />
+        </React.Suspense>
+    )
 }
