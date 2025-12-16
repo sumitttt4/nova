@@ -19,8 +19,18 @@ import {
     ArrowUpRight,
     ArrowDownRight,
     Clock,
-    MoreHorizontal
+    MoreHorizontal,
+    Bike,
+    ChevronRight,
+    Map
 } from "lucide-react"
+import Link from "next/link"
+import {
+    Tooltip as UITooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { useMockData } from "@/contexts/MockDataContext"
 import { useStore } from "@/lib/store"
@@ -175,34 +185,58 @@ export default function DashboardPage() {
                     gradient="from-blue-50 to-indigo-50/50"
                 />
 
+                <MetricCard
+                    title="Online Riders"
+                    icon={Bike}
+                    mainValue="42"
+                    subValue="Currently active"
+                    trend="+5%"
+                    trendUp={true}
+                    color="blue"
+                    gradient="from-blue-50 to-cyan-50/50"
+                />
+
                 {/* Store Health */}
-                <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-orange-50/30 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group">
-                    <div className="flex justify-between items-start mb-6">
-                        <div className="p-3 bg-white rounded-xl shadow-sm border border-orange-100/50">
-                            <Store className="h-6 w-6 text-orange-500" />
-                        </div>
-                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border shadow-sm ${isConnected ? 'border-green-100' : 'border-slate-100'}`}>
-                            <span className="relative flex h-2.5 w-2.5">
-                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isConnected ? 'bg-green-400' : 'bg-slate-400'}`}></span>
-                                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isConnected ? 'bg-green-500' : 'bg-slate-500'}`}></span>
-                            </span>
-                            <span className={`text-[11px] font-bold tracking-wide ${isConnected ? 'text-green-700' : 'text-slate-500'}`}>
-                                {isConnected ? "LIVE HQ" : "OFFLINE"}
-                            </span>
-                        </div>
-                    </div>
-                    <div>
-                        <p className="text-sm font-semibold text-slate-500">Store Health</p>
-                        <div className="flex items-baseline gap-2 mt-2">
-                            <h3 className="text-3xl font-bold text-slate-900 group-hover:scale-105 transition-transform origin-left">85/92</h3>
-                        </div>
-                        <div className="mt-4 flex items-center gap-2">
-                            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-gradient-to-r from-orange-400 to-red-500 w-[92%] rounded-full" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
+                <Link href="/stores" className="block relative overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-orange-50/30 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group cursor-pointer">
+                    <TooltipProvider>
+                        <UITooltip>
+                            <TooltipTrigger asChild>
+                                <div className="h-full w-full">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="p-3 bg-white rounded-xl shadow-sm border border-orange-100/50">
+                                            <Store className="h-6 w-6 text-orange-500" />
+                                        </div>
+                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border shadow-sm ${isConnected ? 'border-green-100' : 'border-slate-100'}`}>
+                                            <span className="relative flex h-2.5 w-2.5">
+                                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isConnected ? 'bg-green-400' : 'bg-slate-400'}`}></span>
+                                                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isConnected ? 'bg-green-500' : 'bg-slate-500'}`}></span>
+                                            </span>
+                                            <span className={`text-[11px] font-bold tracking-wide ${isConnected ? 'text-green-700' : 'text-slate-500'}`}>
+                                                {isConnected ? "LIVE HQ" : "OFFLINE"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-500">Store Health</p>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <h3 className="text-3xl font-bold text-slate-900 group-hover:scale-105 transition-transform origin-left">85/92</h3>
+                                            <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-1 transition-all" />
+                                        </div>
+                                        <div className="mt-4 flex items-center gap-2">
+                                            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                <div className="h-full bg-gradient-to-r from-orange-400 to-red-500 w-[92%] rounded-full" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>85 stores online out of 92 total</p>
+                            </TooltipContent>
+                        </UITooltip>
+                    </TooltipProvider>
+                </Link>
 
                 <MetricCard
                     title="Calculated Revenue"
@@ -219,7 +253,13 @@ export default function DashboardPage() {
                     title="Active Orders"
                     icon={ShoppingBag}
                     mainValue={totalOrders.toString()}
-                    subValue="Live Tracking"
+                    subValue={
+                        <Link href="/orders/live" className="flex items-center gap-1.5 p-1 -ml-1 rounded-lg hover:bg-purple-100/50 transition-colors w-fit group/link">
+                            <Map className="h-3 w-3 text-purple-600" />
+                            <span className="text-purple-700 font-bold">Live Tracking</span>
+                            <ChevronRight className="h-3 w-3 text-purple-400 group-hover/link:translate-x-0.5 transition-transform" />
+                        </Link>
+                    }
                     trend="-2.1%"
                     trendUp={false}
                     color="purple"
@@ -353,7 +393,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 
