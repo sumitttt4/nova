@@ -22,17 +22,19 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useMockData } from "@/contexts/MockDataContext"
 import Link from "next/link"
+import { RiderLifecycle } from "@/components/riders/RiderLifecycle"
+import { RiderRatingChart } from "@/components/riders/RiderRatingChart"
 
 export default function RidersPage() {
     const { riders } = useMockData()
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-6 animate-in fade-in duration-500 pb-10">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="space-y-1 text-center sm:text-left">
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Riders Fleet</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Rider Cockpit</h1>
                     <p className="text-slate-500">
-                        Monitor active riders, assignments and performance.
+                        Monitor active riders, assignments, efficiency, and lifecycle.
                     </p>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
@@ -49,6 +51,12 @@ export default function RidersPage() {
                         </Button>
                     </Link>
                 </div>
+            </div>
+
+            {/* Rider Cockpit Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                <RiderLifecycle />
+                <RiderRatingChart />
             </div>
 
             <div className="flex items-center gap-2">

@@ -1,0 +1,132 @@
+{
+    "root": {
+        "title": "Main Menu",
+        "items": [
+            {
+                "title": "Dashboard",
+                "href": "/dashboard",
+                "icon": "LayoutDashboard"
+            },
+            {
+                "title": "Orders",
+                "href": "/orders",
+                "icon": "History"
+            },
+            {
+                "title": "Users",
+                "href": "/users",
+                "icon": "Users"
+            },
+            {
+                "title": "Stores",
+                "href": "/stores",
+                "icon": "Store"
+            },
+            {
+                "title": "Merchants",
+                "href": "/merchants",
+                "icon": "Users"
+            },
+            {
+                "title": "Riders",
+                "href": "/riders",
+                "icon": "Bike"
+            },
+            {
+                "title": "Finance",
+                "href": "/finance",
+                "icon": "Wallet"
+            },
+            {
+                "title": "Settings",
+                "href": "/settings",
+                "icon": "Settings"
+            }
+        ]
+    },
+    "stores": {
+        "title": "Store Management",
+        "items": [
+            {
+                "title": "All Stores",
+                "href": "/stores",
+                "icon": "Store"
+            },
+            {
+                "title": "Add Store",
+                "href": "/stores/new",
+                "icon": "CheckCircle2"
+            }
+        ]
+    },
+    "users": {
+        "title": "User Management",
+        "items": [
+            {
+                "title": "All Users",
+                "href": "/users",
+                "icon": "Users"
+            }
+        ]
+    },
+    "orders": {
+        "title": "Order Management",
+        "items": [
+            {
+                "title": "Live Orders",
+                "href": "/orders",
+                "icon": "History"
+            },
+            {
+                "title": "Order Issues",
+                "href": "/orders/issues",
+                "icon": "ShieldAlert"
+            }
+        ]
+    },
+    "riders": {
+        "title": "Rider Fleet",
+        "items": [
+            {
+                "title": "Active Riders",
+                "href": "/riders",
+                "icon": "Bike"
+            },
+            {
+                "title": "Rider performance",
+                "href": "/riders/stats",
+                "icon": "BarChart3"
+            }
+        ]
+    },
+    "merchants": {
+        "title": "Merchants",
+        "items": [
+            {
+                "title": "Partner List",
+                "href": "/merchants",
+                "icon": "Users"
+            },
+            {
+                "title": "Applications",
+                "href": "/merchants/applications",
+                "icon": "FileText"
+            }
+        ]
+    },
+    "finance": {
+        "title": "Financial Overview",
+        "items": [
+            {
+                "title": "Revenue",
+                "href": "/finance",
+                "icon": "Wallet"
+            },
+            {
+                "title": "Payouts",
+                "href": "/finance/payouts",
+                "icon": "FileText"
+            }
+        ]
+    }
+}

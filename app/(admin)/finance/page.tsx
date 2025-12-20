@@ -89,8 +89,8 @@ export default function FinancePage() {
                                 <div className="text-right">
                                     <div className="font-bold text-slate-900">₹{txn.amount.toLocaleString()}</div>
                                     <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${txn.status === 'paid' ? 'bg-green-100 text-green-700' :
-                                            txn.status === 'processing' ? 'bg-blue-100 text-blue-700' :
-                                                'bg-red-100 text-red-700'
+                                        txn.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+                                            'bg-red-100 text-red-700'
                                         }`}>{txn.status}</span>
                                 </div>
                             </div>

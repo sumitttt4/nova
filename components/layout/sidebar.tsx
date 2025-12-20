@@ -133,18 +133,18 @@ export function Sidebar() {
                                 href={item.href}
                                 className={cn(
                                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ring-offset-background transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                                    isActive ? "bg-slate-900 text-white hover:bg-slate-900/90 shadow-md shadow-slate-900/10" : "text-slate-600 hover:text-slate-900",
+                                    isActive ? "bg-[#2BD67C]/10 text-[#2BD67C] hover:bg-[#2BD67C]/20" : "text-slate-600 hover:text-slate-900",
                                     isCollapsed && "justify-center px-2"
                                 )}
                             >
-                                <Icon className={cn("h-5 w-5 shrink-0", isActive ? "text-white" : "text-slate-500")} />
+                                <Icon className={cn("h-5 w-5 shrink-0", isActive ? "text-[#2BD67C]" : "text-slate-500")} />
                                 {!isCollapsed && (
-                                    <span className="truncate animate-in fade-in duration-300">
+                                    <span className="truncate animate-in fade-in duration-300 font-semibold">
                                         {item.title}
                                     </span>
                                 )}
                                 {!isCollapsed && isActive && (
-                                    <div className="ml-auto h-2 w-2 rounded-full bg-[#2BD67C] animate-pulse" />
+                                    <div className="ml-auto h-2 w-2 rounded-full bg-[#2BD67C] shadow-[0_0_8px_rgba(43,214,124,0.5)]" />
                                 )}
                             </Link>
                         )
@@ -211,6 +211,6 @@ export function Sidebar() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-        </aside>
+        </aside >
     )
 }

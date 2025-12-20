@@ -1,5 +1,8 @@
 "use client"
 
+import * as React from "react"
+import { useRouter } from "next/navigation"
+import { useMockData } from "@/contexts/MockDataContext"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -21,64 +24,16 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-const users = [
-    {
-        id: "USR-001",
-        name: "Rahul Sharma",
-        email: "rahul.sharma@example.com",
-        phone: "+91 98765 43210",
-        status: "Active",
-        joined: "12 Oct, 2023",
-        orders: 45
-    },
-    {
-        id: "USR-002",
-        name: "Priya Singh",
-        email: "priya.singh@example.com",
-        phone: "+91 98765 12345",
-        status: "Active",
-        joined: "15 Oct, 2023",
-        orders: 12
-    },
-    {
-        id: "USR-003",
-        name: "Amit Patel",
-        email: "amit.patel@example.com",
-        phone: "+91 98765 67890",
-        status: "Inactive",
-        joined: "20 Oct, 2023",
-        orders: 0
-    },
-    {
-        id: "USR-004",
-        name: "Sneha Gupta",
-        email: "sneha.gupta@example.com",
-        phone: "+91 98765 98765",
-        status: "Suspended",
-        joined: "05 Nov, 2023",
-        orders: 2
-    },
-    {
-        id: "USR-005",
-        name: "Vikram Malhotra",
-        email: "vikram.m@example.com",
-        phone: "+91 98765 11223",
-        status: "Active",
-        joined: "10 Dec, 2023",
-        orders: 89
-    },
-    {
-        id: "USR-006",
-        name: "Anjali Rao",
-        email: "anjali.r@example.com",
-        phone: "+91 98765 33445",
-        status: "Active",
-        joined: "12 Dec, 2023",
-        orders: 23
-    },
-]
-
 export default function UsersPage() {
+    const router = useRouter()
+    const { users } = useMockData()
+    const [searchTerm, setSearchTerm] = React.useState("")
+
+    const filteredUsers = users.filter(user =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -100,6 +55,8 @@ export default function UsersPage() {
                         type="search"
                         placeholder="Search users..."
                         className="pl-9"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <Button variant="outline" size="icon">
@@ -116,14 +73,14 @@ export default function UsersPage() {
                             <TableHead>Contact</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Joined</TableHead>
-                            <TableHead className="text-right">Orders</TableHead>
+                            <TableHead className="text-right">Balance</TableHead>
                             <TableHead className="text-right"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {users.map((user) => (
-                            <TableRow key={user.id}>
-                                <TableCell>
+                        {filteredUsers.map((user) => (
+                            <TableRow key={user.id} className="cursor-pointer hover:bg-slate-50" onClick={() => router.push(`/users/${user.id}`)}>
+                                <TableCell onClick={(e) => e.stopPropagation()}>
                                     <Avatar className="h-9 w-9">
                                         <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt={user.name} />
                                         <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
@@ -141,26 +98,26 @@ export default function UsersPage() {
                                 <TableCell>
                                     <Badge
                                         variant={
-                                            user.status === "Active"
+                                            user.status === "active"
                                                 ? "default"
-                                                : user.status === "Inactive"
+                                                : user.status === "warned"
                                                     ? "secondary"
                                                     : "destructive"
                                         }
                                         className={
-                                            user.status === "Active"
-                                                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                                : user.status === "Inactive"
-                                                    ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                                                    : "bg-red-100 text-red-700 hover:bg-red-200"
+                                            user.status === "active"
+                                                ? "bg-green-100 text-green-700"
+                                                : user.status === "warned"
+                                                    ? "bg-yellow-100 text-yellow-700"
+                                                    : "bg-red-100 text-red-700"
                                         }
                                     >
-                                        {user.status}
+                                        {user.status.toUpperCase()}
                                     </Badge>
                                 </TableCell>
-                                <TableCell>{user.joined}</TableCell>
-                                <TableCell className="text-right font-medium">{user.orders}</TableCell>
-                                <TableCell className="text-right">
+                                <TableCell>{new Date(user.joinedAt).toLocaleDateString()}</TableCell>
+                                <TableCell className="text-right font-medium">₹{user.walletBalance}</TableCell>
+                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -173,8 +130,10 @@ export default function UsersPage() {
                                             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
                                                 Copy ID
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem>View details</DropdownMenuItem>
-                                            <DropdownMenuItem className="text-red-600">Block user</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => router.push(`/users/${user.id}`)}>
+                                                View details
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="text-red-600">Ban user</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>

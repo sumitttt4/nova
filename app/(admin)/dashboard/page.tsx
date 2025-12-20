@@ -34,76 +34,45 @@ import {
 import { cn } from "@/lib/utils"
 import { useMockData } from "@/contexts/MockDataContext"
 import { useStore } from "@/lib/store"
-import { isSameDay, isSameMonth, isSameYear, subDays } from "date-fns"
+import { isSameDay, isSameMonth, isSameYear, subDays, formatDistanceToNow, subMinutes, subHours } from "date-fns"
+import { Skeleton } from "@/components/ui/skeleton"
 
 // --- Mock Data ---
 const DATA_SETS = {
     daily: [
-        { name: "00:00", value: 400 },
-        { name: "04:00", value: 200 },
-        { name: "08:00", value: 1200 },
-        { name: "12:00", value: 3800 },
-        { name: "16:00", value: 4200 },
-        { name: "20:00", value: 5400 },
-        { name: "23:59", value: 3100 },
+        { name: "00:00", value: 400, previous: 350 },
+        { name: "04:00", value: 200, previous: 220 },
+        { name: "08:00", value: 1200, previous: 1100 },
+        { name: "12:00", value: 3800, previous: 3400 },
+        { name: "16:00", value: 4200, previous: 3900 },
+        { name: "20:00", value: 5400, previous: 4800 },
+        { name: "23:59", value: 3100, previous: 2900 },
     ],
     monthly: [
-        { name: "Week 1", value: 12500 },
-        { name: "Week 2", value: 18900 },
-        { name: "Week 3", value: 15400 },
-        { name: "Week 4", value: 24500 },
+        { name: "Week 1", value: 12500, previous: 11000 },
+        { name: "Week 2", value: 18900, previous: 17500 },
+        { name: "Week 3", value: 15400, previous: 16000 },
+        { name: "Week 4", value: 24500, previous: 22000 },
     ],
     yearly: [
-        { name: "Jan", value: 45000 },
-        { name: "Mar", value: 85000 },
-        { name: "Jun", value: 65000 },
-        { name: "Sep", value: 95000 },
-        { name: "Dec", value: 120000 },
+        { name: "Jan", value: 45000, previous: 40000 },
+        { name: "Mar", value: 85000, previous: 78000 },
+        { name: "Jun", value: 65000, previous: 62000 },
+        { name: "Sep", value: 95000, previous: 88000 },
+        { name: "Dec", value: 120000, previous: 110000 },
     ]
 }
-
-const recentActivity = [
-    {
-        id: 1,
-        type: "order",
-        title: "New Order #4092",
-        description: "Burger King • ₹450 paid",
-        time: "2 mins ago",
-        status: "success",
-        icon: ShoppingBag
-    },
-    {
-        id: 2,
-        type: "alert",
-        title: "High Demand Alert",
-        description: "Koramangala Zone overload",
-        time: "5 mins ago",
-        status: "warning",
-        icon: TrendingUp
-    },
-    {
-        id: 3,
-        type: "store",
-        title: "Store Went Live",
-        description: "Fresh Mart is now open",
-        time: "15 mins ago",
-        status: "success",
-        icon: Store
-    },
-    {
-        id: 4,
-        type: "payout",
-        title: "Payout Processed",
-        description: "Batch #9921 settled",
-        time: "1 hour ago",
-        status: "info",
-        icon: Wallet
-    }
-]
 
 export default function DashboardPage() {
     const { orders } = useMockData()
     const { connectSocket, disconnectSocket, isConnected, notifications } = useStore()
+    const [isLoading, setIsLoading] = React.useState(true)
+
+    // Simulate initial data fetch
+    React.useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 1000)
+        return () => clearTimeout(timer)
+    }, [])
 
     // Connect to HQ Socket on mount
     React.useEffect(() => {
@@ -117,13 +86,14 @@ export default function DashboardPage() {
 
     // Handle data switch with simple transition effect
     React.useEffect(() => {
+        if (isLoading) return
         setIsAnimating(true)
         const timer = setTimeout(() => {
             setChartData(DATA_SETS[timeRange])
             setIsAnimating(false)
         }, 200)
         return () => clearTimeout(timer)
-    }, [timeRange])
+    }, [timeRange, isLoading])
 
     // --- Dynamic Calculations ---
     const now = new Date()
@@ -140,6 +110,74 @@ export default function DashboardPage() {
     const totalRevenue = filteredOrders.reduce((acc, curr) => acc + curr.amount, 0)
     const totalOrders = filteredOrders.length
     const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
+
+    // Dynamic Activity Feed with Freshness
+    const recentActivity = React.useMemo(() => [
+        {
+            id: 1,
+            type: "order",
+            title: "New Order #4092",
+            description: "Burger King • ₹450 paid",
+            timestamp: subMinutes(new Date(), 2),
+            status: "success",
+            icon: ShoppingBag
+        },
+        {
+            id: 2,
+            type: "alert",
+            title: "High Demand Alert",
+            description: "Koramangala Zone overload",
+            timestamp: subMinutes(new Date(), 5),
+            status: "warning",
+            icon: TrendingUp
+        },
+        {
+            id: 3,
+            type: "store",
+            title: "Store Went Live",
+            description: "Fresh Mart is now open",
+            timestamp: subMinutes(new Date(), 15),
+            status: "success",
+            icon: Store
+        },
+        {
+            id: 4,
+            type: "payout",
+            title: "Payout Processed",
+            description: "Batch #9921 settled",
+            timestamp: subHours(new Date(), 1),
+            status: "info",
+            icon: Wallet
+        }
+    ], [])
+
+    if (isLoading) {
+        return (
+            <div className="space-y-8 pb-8">
+                {/* Header Skeleton */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="space-y-2">
+                        <Skeleton className="h-8 w-48" />
+                        <Skeleton className="h-4 w-64" />
+                    </div>
+                    <Skeleton className="h-10 w-64 rounded-xl" />
+                </div>
+
+                {/* Metrics Grid Skeleton */}
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="h-[180px] rounded-2xl" />
+                    ))}
+                </div>
+
+                {/* Main Content Skeleton */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <Skeleton className="lg:col-span-2 h-[450px] rounded-3xl" />
+                    <Skeleton className="h-[450px] rounded-3xl" />
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="space-y-8 pb-8">
@@ -172,99 +210,122 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Metrics Grid */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <MetricCard
-                    title="Total Users"
-                    icon={Users}
-                    mainValue="12,450"
-                    subValue="Active: 854"
-                    trend="+12%"
-                    trendUp={true}
-                    color="blue"
-                    gradient="from-blue-50 to-indigo-50/50"
-                />
+            {/* High-Density Metrics Grid */}
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {/* 1. CAPACITY & DEMAND */}
+                <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <Bike className="h-4 w-4 text-slate-500" />
+                            Live Capacity
+                        </h3>
+                        <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                    </div>
 
-                <MetricCard
-                    title="Online Riders"
-                    icon={Bike}
-                    mainValue="42"
-                    subValue="Currently active"
-                    trend="+5%"
-                    trendUp={true}
-                    color="blue"
-                    gradient="from-blue-50 to-cyan-50/50"
-                />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <p className="text-xs font-semibold text-slate-500">Active Orders</p>
+                            <p className="text-2xl font-bold text-slate-900 mt-1">{totalOrders}</p>
+                            <Link href="/orders/live" className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1 mt-2">
+                                Track Live <ChevronRight className="h-3 w-3" />
+                            </Link>
+                        </div>
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <p className="text-xs font-semibold text-slate-500">Online Riders</p>
+                            <div className="flex items-end gap-1 mt-1">
+                                <p className="text-2xl font-bold text-slate-900">42</p>
+                                <span className="text-[10px] text-green-600 font-bold mb-1">/ 58</span>
+                            </div>
+                            <p className="text-[10px] font-medium text-green-600 mt-2 flex items-center">
+                                <ArrowUpRight className="h-3 w-3 mr-0.5" /> High Supply
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
-                {/* Store Health */}
+                {/* 2. REVENUE PERFORMANCE */}
+                <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <Wallet className="h-4 w-4 text-slate-500" />
+                            Financial Performance
+                        </h3>
+                        <div className="px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-bold border border-green-100">
+                            +8.2% vs last msg
+                        </div>
+                    </div>
 
-                <Link href="/stores" className="block relative overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-orange-50/30 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group cursor-pointer">
-                    <TooltipProvider>
-                        <UITooltip>
-                            <TooltipTrigger asChild>
-                                <div className="h-full w-full">
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div className="p-3 bg-white rounded-xl shadow-sm border border-orange-100/50">
-                                            <Store className="h-6 w-6 text-orange-500" />
-                                        </div>
-                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border shadow-sm ${isConnected ? 'border-green-100' : 'border-slate-100'}`}>
-                                            <span className="relative flex h-2.5 w-2.5">
-                                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isConnected ? 'bg-green-400' : 'bg-slate-400'}`}></span>
-                                                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isConnected ? 'bg-green-500' : 'bg-slate-500'}`}></span>
-                                            </span>
-                                            <span className={`text-[11px] font-bold tracking-wide ${isConnected ? 'text-green-700' : 'text-slate-500'}`}>
-                                                {isConnected ? "LIVE HQ" : "OFFLINE"}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-500">Store Health</p>
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <h3 className="text-3xl font-bold text-slate-900 group-hover:scale-105 transition-transform origin-left">85/92</h3>
-                                            <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-1 transition-all" />
-                                        </div>
-                                        <div className="mt-4 flex items-center gap-2">
-                                            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                                                <div className="h-full bg-gradient-to-r from-orange-400 to-red-500 w-[92%] rounded-full" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>85 stores online out of 92 total</p>
-                            </TooltipContent>
-                        </UITooltip>
-                    </TooltipProvider>
-                </Link>
+                    <div className="flex items-end justify-between">
+                        <div>
+                            <p className="text-xs font-semibold text-slate-400">Total Revenue</p>
+                            <h2 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">
+                                ₹{totalRevenue.toLocaleString()}
+                            </h2>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-xs font-semibold text-slate-400">Avg. Order Value</p>
+                            <p className="text-lg font-bold text-slate-700 mt-0.5">₹{avgOrderValue}</p>
+                        </div>
+                    </div>
 
-                <MetricCard
-                    title="Calculated Revenue"
-                    icon={Wallet}
-                    mainValue={`₹${totalRevenue.toLocaleString()}`}
-                    subValue={`Avg Order: ₹${avgOrderValue}`}
-                    trend="+8.2%"
-                    trendUp={true}
-                    color="green"
-                    gradient="from-emerald-50 to-teal-50/50"
-                />
+                    <div className="mt-4 pt-3 border-t border-slate-50">
+                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                            <div className="h-full bg-[#2BD67C] w-[65%]" title="Food" />
+                            <div className="h-full bg-blue-400 w-[20%]" title="Delivery" />
+                            <div className="h-full bg-amber-400 w-[15%]" title="Taxes" />
+                        </div>
+                        <div className="flex justify-between mt-2 text-[10px] font-medium text-slate-400">
+                            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-[#2BD67C]" /> Item Total</span>
+                            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-blue-400" /> Fees</span>
+                            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-amber-400" /> Tax</span>
+                        </div>
+                    </div>
+                </div>
 
-                <MetricCard
-                    title="Active Orders"
-                    icon={ShoppingBag}
-                    mainValue={totalOrders.toString()}
-                    subValue={
-                        <Link href="/orders/live" className="flex items-center gap-1.5 p-1 -ml-1 rounded-lg hover:bg-purple-100/50 transition-colors w-fit group/link">
-                            <Map className="h-3 w-3 text-purple-600" />
-                            <span className="text-purple-700 font-bold">Live Tracking</span>
-                            <ChevronRight className="h-3 w-3 text-purple-400 group-hover/link:translate-x-0.5 transition-transform" />
+                {/* 3. NETWORK HEALTH */}
+                <div className={cn(
+                    "rounded-2xl border bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between transition-colors duration-300",
+                    (92 - 85) > 0 ? "border-red-200 bg-red-50/30" : "border-gray-100"
+                )}>
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <Store className="h-4 w-4 text-slate-500" />
+                            Network Status
+                        </h3>
+                        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${isConnected ? 'bg-green-50 text-green-700 border-green-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-rose-500 animate-pulse'}`} />
+                            {isConnected ? "HQ LIVE" : "OFFLINE"}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 h-full items-end">
+                        <Link href="/stores" className="group cursor-pointer">
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-2xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">85</span>
+                                <span className="text-sm font-medium text-slate-400">/ 92</span>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                                <p className="text-xs font-semibold text-slate-500">Active Stores</p>
+                                {(92 - 85) > 0 && (
+                                    <span className="text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-md animate-pulse">
+                                        {92 - 85} Down
+                                    </span>
+                                )}
+                            </div>
+                            <div className="mt-2 h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+                                <div className={cn("h-full w-[92%] rounded-full transition-colors", (92 - 85) > 0 ? "bg-amber-500" : "bg-green-500")} />
+                            </div>
                         </Link>
-                    }
-                    trend="-2.1%"
-                    trendUp={false}
-                    color="purple"
-                    gradient="from-purple-50 to-pink-50/50"
-                />
+
+                        <div className="pl-4 border-l border-slate-100">
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-2xl font-bold text-slate-900">12.4k</span>
+                            </div>
+                            <p className="text-xs font-semibold text-slate-500 mt-1">Total Users</p>
+                            <p className="text-[10px] text-green-600 font-bold mt-1.5">+124 this week</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Split-View Activity Feed */}
@@ -324,15 +385,29 @@ export default function DashboardPage() {
                                     }}
                                     itemStyle={{ color: '#1E293B' }}
                                     cursor={{ stroke: '#2BD67C', strokeWidth: 2 }}
+                                    formatter={(value: number, name: string) => [
+                                        `₹${value}`,
+                                        name === "value" ? "Revenue" : "Projected"
+                                    ]}
                                 />
                                 <Area
                                     type="monotone"
+                                    dataKey="previous"
+                                    stroke="#cbd5e1"
+                                    strokeWidth={2}
+                                    strokeDasharray="5 5"
+                                    fillOpacity={0}
+                                    fill="transparent"
+                                />
+                                <Area
+                                    type="linear"
                                     dataKey="value"
                                     stroke="#2BD67C"
-                                    strokeWidth={4}
+                                    strokeWidth={3}
                                     fillOpacity={1}
                                     fill="url(#colorValue)"
                                     animationDuration={1000}
+                                    activeDot={{ r: 6, strokeWidth: 0 }}
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -368,10 +443,10 @@ export default function DashboardPage() {
                                 <div key={item.id} className="relative flex gap-4 group cursor-pointer">
                                     {/* Icon Indicator */}
                                     <div className={cn(
-                                        "relative z-10 flex-none h-10 w-10 rounded-2xl border-4 border-white shadow-md flex items-center justify-center transition-transform duration-200 group-hover:scale-110",
-                                        item.status === 'success' ? 'bg-gradient-to-br from-green-400 to-green-600 text-white' :
-                                            item.status === 'warning' ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-white' :
-                                                'bg-gradient-to-br from-blue-400 to-blue-600 text-white'
+                                        "relative z-10 flex-none h-10 w-10 rounded-2xl border-4 border-white shadow-sm flex items-center justify-center transition-transform duration-200 group-hover:scale-110",
+                                        item.status === 'success' ? 'bg-green-50 text-green-600 ring-1 ring-green-100' :
+                                            item.status === 'warning' ? 'bg-amber-50 text-amber-600 ring-1 ring-amber-100' :
+                                                'bg-slate-50 text-slate-600 ring-1 ring-slate-100'
                                     )}>
                                         <item.icon className="h-4 w-4" />
                                     </div>
@@ -379,7 +454,9 @@ export default function DashboardPage() {
                                     <div className="flex-1 py-1">
                                         <div className="flex justify-between items-start">
                                             <p className="text-sm font-bold text-slate-800 group-hover:text-[#2BD67C] transition-colors">{item.title}</p>
-                                            <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{item.time}</span>
+                                            <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
+                                                {formatDistanceToNow(item.timestamp, { addSuffix: true })}
+                                            </span>
                                         </div>
                                         <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">{item.description}</p>
                                     </div>
@@ -401,22 +478,40 @@ function Button({ children, variant, size, className, ...props }: any) {
     return <button className={className} {...props}>{children}</button>
 }
 
-// Reusable Metric Component with gradient support
-function MetricCard({ title, icon: Icon, mainValue, subValue, trend, trendUp, color, gradient }: any) {
-    const colorStyles: Record<string, string> = {
-        blue: "text-blue-600",
-        green: "text-[#2BD67C]",
-        purple: "text-purple-600",
-        orange: "text-orange-600",
+// Reusable Metric Component with Semantic Variants
+function MetricCard({ title, icon: Icon, mainValue, subValue, trend, trendUp, variant = "neutral" }: any) {
+
+    // Semantic Styling Map
+    const styles = {
+        neutral: {
+            iconBg: "bg-slate-50 border-slate-100",
+            iconColor: "text-slate-600",
+            ringColor: "group-hover:ring-slate-200"
+        },
+        success: {
+            iconBg: "bg-green-50 border-green-100",
+            iconColor: "text-[#2BD67C]",
+            ringColor: "group-hover:ring-green-200"
+        },
+        warning: {
+            iconBg: "bg-amber-50 border-amber-100",
+            iconColor: "text-amber-600",
+            ringColor: "group-hover:ring-amber-200"
+        },
+        danger: {
+            iconBg: "bg-red-50 border-red-100",
+            iconColor: "text-red-600",
+            ringColor: "group-hover:ring-red-200"
+        }
     }
 
-    return (
-        <div className={`relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group`}>
-            {/* Background Gradient */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+    // @ts-ignore
+    const currentStyle = styles[variant] || styles.neutral;
 
+    return (
+        <div className={`relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group ring-1 ring-transparent ${currentStyle.ringColor}`}>
             <div className="relative z-10 flex justify-between items-start mb-6">
-                <div className={`p-3 bg-white rounded-xl shadow-sm border border-gray-100 ${colorStyles[color]}`}>
+                <div className={`p-3 rounded-xl shadow-sm border ${currentStyle.iconBg} ${currentStyle.iconColor}`}>
                     <Icon className="h-6 w-6" />
                 </div>
                 <div className={`
@@ -432,7 +527,7 @@ function MetricCard({ title, icon: Icon, mainValue, subValue, trend, trendUp, co
                 <div className="flex items-baseline gap-2 mt-2">
                     <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{mainValue}</h3>
                 </div>
-                <p className="text-xs font-medium text-slate-400 mt-2">{subValue}</p>
+                <div className="text-xs font-medium text-slate-400 mt-2">{subValue}</div>
             </div>
         </div>
     )
