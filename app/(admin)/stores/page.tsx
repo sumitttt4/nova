@@ -24,10 +24,16 @@ import { useMockData } from "@/contexts/MockDataContext"
 import Link from "next/link"
 
 export default function StoresPage() {
-    const { merchants } = useMockData()
+    const { merchants, updateMerchantStatus } = useMockData()
 
     // Filter merchants to only show "approved" ones as active stores
     const activeStores = merchants.filter(m => m.status === 'approved' || m.status === 'under_review')
+
+    const handleSuspendStore = (id: string) => {
+        if (confirm("Are you sure you want to suspend this store? It will be moved to inactive status.")) {
+            updateMerchantStatus(id, 'rejected', ['Suspended by Admin'])
+        }
+    }
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -132,9 +138,16 @@ export default function StoresPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem>View dashboard</DropdownMenuItem>
-                                                <DropdownMenuItem>Edit details</DropdownMenuItem>
+                                                <DropdownMenuItem asChild>
+                                                    <Link href={`/merchants/${store.id}`}>View dashboard</Link>
+                                                </DropdownMenuItem>
                                                 <DropdownMenuItem>Manage menu</DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    className="text-red-600 focus:text-red-600 cursor-pointer"
+                                                    onClick={() => handleSuspendStore(store.id)}
+                                                >
+                                                    Suspend Store
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>

@@ -1,0 +1,465 @@
+{
+    "_id": {
+        "$oid": "68a2ed5ebc273d28b7304c96"
+    },
+    "storeTypes": {
+        "grocery_food": {
+            "label": "Grocery & Food",
+            "limits": {
+                "maxVariants": 100,
+                "maxImages": 2,
+                "minImages": 1
+            },
+            "pricingRules": {
+                "mrpRequired": true,
+                "mrpPhotoRequired": false,
+                "allowBelowMRP": false,
+                "tax": {
+                    "hsn": null,
+                    "gstSlab": 5
+                }
+            },
+            "compliance": {
+                "fssaiRequired": true,
+                "ageRestricted": false,
+                "hazardous": false,
+                "returnable": true,
+                "returnWindowDays": 2
+            },
+            "stockRules": {
+                "trackByVariant": true,
+                "allowNegative": false,
+                "minOrderQty": 1,
+                "maxOrderQty": 5
+            },
+            "shipping": {
+                "requiresLargePackage": false,
+                "weightRequired": false,
+                "dimensionsRequired": false,
+                "codAllowed": true
+            },
+            "finance": {
+                "financeEligible": false,
+                "whitelistDriverOnly": false,
+                "minPriceForFinance": 10000
+            },
+            "media": {
+                "image": {
+                    "required": true,
+                    "minCount": 1,
+                    "maxCount": 8,
+                    "accept": [
+                        "jpg",
+                        "jpeg",
+                        "png",
+                        "webp"
+                    ],
+                    "aspectHint": "1:1"
+                }
+            },
+            "moderation": {
+                "manualReviewRequired": false
+            },
+            "serialization": {
+                "imeiRequired": false,
+                "serialRequired": false
+            },
+            "types": {
+                "open_item": {
+                    "label": "Open Item (Loose)",
+                    "attributes": {
+                        "unit": {
+                            "label": "Unit",
+                            "input": "select",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "allowedValues": [
+                                "kg",
+                                "g",
+                                "ltr",
+                                "ml"
+                            ],
+                            "validation": {}
+                        },
+                        "minQty": {
+                            "label": "Min Qty",
+                            "input": "number",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {
+                                "min": 0.05,
+                                "max": 5,
+                                "step": 0.05
+                            }
+                        },
+                        "maxQty": {
+                            "label": "Max Qty",
+                            "input": "number",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {
+                                "min": 0.1,
+                                "max": 25
+                            }
+                        },
+                        "pricePerUnit": {
+                            "label": "Price / Unit",
+                            "input": "number",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {
+                                "min": 0
+                            }
+                        },
+                        "veg": {
+                            "label": "Vegetarian",
+                            "input": "boolean",
+                            "isRequired": false,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {}
+                        }
+                    },
+                    "variantKeys": [],
+                    "limits": {
+                        "maxVariants": 1
+                    }
+                },
+                "closed_pack": {
+                    "label": "Closed Pack",
+                    "attributes": {
+                        "packSize": {
+                            "label": "Pack Size",
+                            "input": "chips",
+                            "isRequired": true,
+                            "createVariant": true,
+                            "allowCustom": true,
+                            "allowedValues": [
+                                "250g",
+                                "500g",
+                                "1kg",
+                                "2kg"
+                            ],
+                            "validation": {
+                                "minLen": 1,
+                                "maxLen": 10
+                            }
+                        },
+                        "price": {
+                            "label": "Price",
+                            "input": "number",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {
+                                "min": 0
+                            }
+                        },
+                        "mrp": {
+                            "label": "MRP",
+                            "input": "number",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {
+                                "min": 0
+                            }
+                        },
+                        "mrpPhoto": {
+                            "label": "MRP Photo Required",
+                            "input": "boolean",
+                            "isRequired": false,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "default": true,
+                            "validation": {}
+                        },
+                        "veg": {
+                            "label": "Vegetarian",
+                            "input": "boolean",
+                            "isRequired": false,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {}
+                        }
+                    },
+                    "variantKeys": [
+                        "packSize"
+                    ]
+                }
+            }
+        },
+        "pharmacy_otc": {
+            "label": "Pharmacy (OTC)",
+            "limits": {
+                "maxVariants": 100,
+                "maxImages": 8,
+                "minImages": 1
+            },
+            "pricingRules": {
+                "mrpRequired": true,
+                "mrpPhotoRequired": false,
+                "allowBelowMRP": false,
+                "tax": {
+                    "gstSlab": 12
+                }
+            },
+            "compliance": {
+                "fssaiRequired": false,
+                "ageRestricted": false,
+                "hazardous": false,
+                "returnable": false,
+                "returnWindowDays": 7,
+                "drugLicenseRequired": true
+            },
+            "stockRules": {
+                "trackByVariant": true,
+                "allowNegative": false,
+                "minOrderQty": 1,
+                "maxOrderQty": 5
+            },
+            "shipping": {
+                "requiresLargePackage": false,
+                "weightRequired": false,
+                "dimensionsRequired": false,
+                "codAllowed": true
+            },
+            "finance": {
+                "financeEligible": false,
+                "whitelistDriverOnly": false,
+                "minPriceForFinance": 10000
+            },
+            "media": {
+                "image": {
+                    "required": true,
+                    "minCount": 1,
+                    "maxCount": 8,
+                    "accept": [
+                        "jpg",
+                        "jpeg",
+                        "png",
+                        "webp"
+                    ],
+                    "aspectHint": "1:1"
+                }
+            },
+            "moderation": {
+                "manualReviewRequired": false
+            },
+            "serialization": {
+                "imeiRequired": false,
+                "serialRequired": false
+            },
+            "types": {
+                "otc_meds": {
+                    "label": "OTC Medicines",
+                    "attributes": {
+                        "name": {
+                            "label": "Name",
+                            "input": "text",
+                            "isRequired": true,
+                            "createVariant": true,
+                            "allowCustom": true,
+                            "validation": {
+                                "maxLen": 80
+                            }
+                        },
+                        "brand": {
+                            "label": "Brand",
+                            "input": "text",
+                            "isRequired": false,
+                            "createVariant": false,
+                            "allowCustom": true,
+                            "validation": {
+                                "maxLen": 40
+                            }
+                        },
+                        "dose": {
+                            "label": "Dose/Strength",
+                            "input": "text",
+                            "isRequired": true,
+                            "createVariant": true,
+                            "allowCustom": true,
+                            "validation": {
+                                "maxLen": 20
+                            }
+                        },
+                        "pack": {
+                            "label": "Pack Size",
+                            "input": "text",
+                            "isRequired": true,
+                            "createVariant": true,
+                            "allowCustom": true,
+                            "validation": {
+                                "maxLen": 10
+                            }
+                        },
+                        "mrp": {
+                            "label": "MRP",
+                            "input": "number",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {}
+                        },
+                        "price": {
+                            "label": "Price",
+                            "input": "number",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {}
+                        }
+                    },
+                    "variantKeys": [
+                        "name",
+                        "dose",
+                        "pack"
+                    ]
+                }
+            }
+        },
+        "electronics_appliances": {
+            "label": "Electronics & Appliances",
+            "limits": {
+                "maxVariants": 100,
+                "maxImages": 8,
+                "minImages": 1
+            },
+            "pricingRules": {
+                "mrpRequired": true,
+                "mrpPhotoRequired": false,
+                "allowBelowMRP": false,
+                "tax": {
+                    "gstSlab": 18
+                }
+            },
+            "compliance": {
+                "fssaiRequired": false,
+                "ageRestricted": false,
+                "hazardous": false,
+                "returnable": true,
+                "returnWindowDays": 7
+            },
+            "stockRules": {
+                "trackByVariant": true,
+                "allowNegative": false,
+                "minOrderQty": 1,
+                "maxOrderQty": 5
+            },
+            "shipping": {
+                "requiresLargePackage": false,
+                "weightRequired": false,
+                "dimensionsRequired": false,
+                "codAllowed": true
+            },
+            "finance": {
+                "financeEligible": true,
+                "whitelistDriverOnly": false,
+                "minPriceForFinance": 10000
+            },
+            "media": {
+                "image": {
+                    "required": true,
+                    "minCount": 1,
+                    "maxCount": 8,
+                    "accept": [
+                        "jpg",
+                        "jpeg",
+                        "png",
+                        "webp"
+                    ],
+                    "aspectHint": "1:1"
+                }
+            },
+            "moderation": {
+                "manualReviewRequired": false
+            },
+            "serialization": {
+                "imeiRequired": false,
+                "serialRequired": false
+            },
+            "types": {
+                "home_appliance": {
+                    "label": "Home Appliance",
+                    "attributes": {
+                        "brand": {
+                            "label": "Brand",
+                            "input": "text",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": true,
+                            "validation": {
+                                "maxLen": 40
+                            }
+                        },
+                        "model": {
+                            "label": "Model",
+                            "input": "text",
+                            "isRequired": true,
+                            "createVariant": true,
+                            "allowCustom": true,
+                            "validation": {
+                                "maxLen": 60
+                            }
+                        },
+                        "warranty": {
+                            "label": "Warranty",
+                            "input": "select",
+                            "isRequired": false,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "allowedValues": [
+                                "No Warranty",
+                                "1 Year",
+                                "2 Years",
+                                "3 Years"
+                            ],
+                            "validation": {}
+                        },
+                        "color": {
+                            "label": "Color",
+                            "input": "chips",
+                            "isRequired": false,
+                            "createVariant": true,
+                            "allowCustom": true,
+                            "allowedValues": [
+                                "White",
+                                "Black",
+                                "Grey",
+                                "Silver"
+                            ],
+                            "validation": {
+                                "maxLen": 12
+                            }
+                        },
+                        "mrp": {
+                            "label": "MRP",
+                            "input": "number",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {}
+                        },
+                        "price": {
+                            "label": "Price",
+                            "input": "number",
+                            "isRequired": true,
+                            "createVariant": false,
+                            "allowCustom": false,
+                            "validation": {}
+                        }
+                    },
+                    "variantKeys": [
+                        "model",
+                        "color"
+                    ]
+                }
+            }
+        }
+    }
+}

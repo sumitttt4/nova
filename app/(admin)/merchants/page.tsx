@@ -26,7 +26,13 @@ import { PayoutsTable } from "@/components/merchants/PayoutsTable"
 import { LiveMenuStatus } from "@/components/merchants/LiveMenuStatus"
 
 export default function MerchantsPage() {
-    const { merchants } = useMockData()
+    const { merchants, updateMerchantStatus } = useMockData()
+
+    const handleOffboard = (id: string) => {
+        if (confirm("Are you sure you want to offboard this merchant? This will block their access.")) {
+            updateMerchantStatus(id, 'rejected', ['Offboarded by Admin'])
+        }
+    }
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
@@ -38,7 +44,7 @@ export default function MerchantsPage() {
                     </p>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <Link href="/merchants/new">
+                    <Link href="/stores/new">
                         <Button className="gap-2 w-full sm:w-auto">
                             <Building2 className="h-4 w-4" />
                             Onboard Merchant
@@ -68,8 +74,8 @@ export default function MerchantsPage() {
                     </Button>
                 </div>
 
-                <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                    <Table>
+                <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
+                    <Table className="min-w-[1000px]">
                         <TableHeader className="bg-slate-50">
                             <TableRow>
                                 <TableHead className="w-[50px]"></TableHead>
@@ -101,10 +107,10 @@ export default function MerchantsPage() {
                                         <TableCell>
                                             <div className="flex flex-col">
                                                 <span className="font-semibold text-sm text-slate-900">{merchant.storeName}</span>
-                                                <span className="text-xs text-slate-500">{merchant.personal.email}</span>
+                                                <span className="text-xs text-slate-500">{merchant.personal?.email || "N/A"}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-sm text-slate-700">{merchant.personal.name}</TableCell>
+                                        <TableCell className="text-sm text-slate-700">{merchant.personal?.name || "N/A"}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1.5 text-slate-600 text-sm">
                                                 <Store className="h-3.5 w-3.5" />
@@ -138,9 +144,18 @@ export default function MerchantsPage() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem>View details</DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href={`/merchants/${merchant.id}`}>
+                                                            View dashboard
+                                                        </Link>
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem>Manage Stores</DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-red-600">Offboard</DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="text-red-600 focus:text-red-600 cursor-pointer"
+                                                        onClick={() => handleOffboard(merchant.id)}
+                                                    >
+                                                        Offboard
+                                                    </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>

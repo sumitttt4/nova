@@ -62,23 +62,24 @@ export default function RiderApprovalsPage() {
     const pendingRiders = riders.filter(r => r.status === 'under_review')
     const activeRider = riders.find(r => r.id === selectedRider)
 
-    const handleApprove = () => {
-        if (!activeRider) return
+    const handleApprove = (id: string) => {
+        const rider = riders.find(r => r.id === id)
+        if (!rider) return
 
         // Fee check
-        if (activeRider.onboardingFee.status === 'unpaid') {
+        if (rider.onboardingFee.status === 'unpaid') {
             const confirm = window.confirm("⚠️ Application Fee is UNPAID. Are you sure you want to approve this rider?")
             if (!confirm) return
         }
 
-        updateRiderStatus(activeRider.id, 'active')
+        updateRiderStatus(id, 'active')
         setSelectedRider(null)
         setFaceMatchConfirmed(false)
     }
 
     const handleReject = () => {
-        if (!activeRider) return
-        updateRiderStatus(activeRider.id, 'rejected', rejectionReasons)
+        if (!selectedRider) return
+        updateRiderStatus(selectedRider, 'rejected', rejectionReasons)
         setShowRejectDialog(false)
         setSelectedRider(null)
         setRejectionReasons([])
@@ -158,27 +159,28 @@ export default function RiderApprovalsPage() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Sheet open={selectedRider === rider.id} onOpenChange={(open) => {
-                                            if (!open) setSelectedRider(null)
-                                            else setSelectedRider(rider.id)
-                                        }}>
-                                            <SheetTrigger asChild>
-                                                <Button size="sm" className="bg-slate-900 hover:bg-slate-800 text-white font-bold h-8 px-4">
-                                                    Verify Now
-                                                </Button>
-                                            </SheetTrigger>
-                                            <SheetContent className="w-[600px] sm:w-[840px] overflow-y-auto bg-slate-50/50 p-0 border-l border-slate-200">
-                                                {activeRider && (
-                                                    <RiderVerificationContent
-                                                        rider={activeRider}
-                                                        onApprove={handleApprove}
-                                                        onReject={() => setShowRejectDialog(true)}
-                                                        faceMatchConfirmed={faceMatchConfirmed}
-                                                        setFaceMatchConfirmed={setFaceMatchConfirmed}
-                                                    />
-                                                )}
-                                            </SheetContent>
-                                        </Sheet>
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Button
+                                                size="sm"
+                                                className="bg-[#2BD67C] hover:bg-[#25B869] text-white font-bold h-8 px-4"
+                                                onClick={() => handleApprove(rider.id)}
+                                            >
+                                                <CheckCircle2 className="mr-2 h-4 w-4" />
+                                                Approve
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-700 h-8 px-4"
+                                                onClick={() => {
+                                                    setSelectedRider(rider.id)
+                                                    setShowRejectDialog(true)
+                                                }}
+                                            >
+                                                <XCircle className="mr-2 h-4 w-4" />
+                                                Reject
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))

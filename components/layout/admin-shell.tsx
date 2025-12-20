@@ -15,8 +15,10 @@ import {
     CreditCard,
     FileText,
     Calculator,
-    UserCircle
+    UserCircle,
+    Menu
 } from "lucide-react"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -25,6 +27,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { DialogTitle } from "@/components/ui/dialog"
 import {
     CommandDialog,
     CommandEmpty,
@@ -40,14 +43,15 @@ import { useStore } from "@/lib/store"
 export function AdminShell({ children }: { children: React.ReactNode }) {
     const { notifications } = useStore()
     const router = useRouter()
-    const [open, setOpen] = React.useState(false)
+    const [isSearchOpen, setIsSearchOpen] = React.useState(false)
+    const [isSidebarOpen, setIsSidebarOpen] = React.useState(false)
 
     // Toggle Command Dialog on Ctrl+K or Cmd+K
     React.useEffect(() => {
         const down = (e: KeyboardEvent) => {
             if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault()
-                setOpen((open) => !open)
+                setIsSearchOpen((open) => !open)
             }
         }
         document.addEventListener("keydown", down)
@@ -55,23 +59,56 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     }, [])
 
     const runCommand = React.useCallback((command: () => unknown) => {
-        setOpen(false)
+        setIsSearchOpen(false)
         command()
     }, [])
 
     return (
         <div className="flex h-screen w-full bg-[#FAFAFA] font-sans text-slate-900 selection:bg-[#2BD67C]/20 selection:text-[#2BD67C]">
-            {/* Sidebar Component (Fixed Left) */}
-            <Sidebar />
+            {/* Sidebar Component (Fixed Left) - Desktop Only */}
+            <div className="hidden lg:flex">
+                <Sidebar />
+            </div>
 
             {/* Main Content Area */}
             <div className="flex flex-1 flex-col overflow-hidden">
                 {/* Minimal Header */}
-                <header className="flex h-20 items-center justify-between px-8 py-4 z-20">
-                    {/* Search Command Trigger */}
+                <header className="flex h-16 md:h-20 items-center justify-between px-4 md:px-8 py-4 z-20">
+
+                    {/* Mobile Sidebar Trigger */}
+                    <div className="lg:hidden flex items-center gap-4">
+                        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="lg:hidden">
+                                    <Menu className="h-6 w-6" />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="p-0 w-[280px]">
+                                <SheetTitle className="sr-only">Mobile Navigation</SheetTitle>
+                                <Sidebar isMobile onClose={() => setIsSidebarOpen(false)} />
+                            </SheetContent>
+                        </Sheet>
+                        {/* Mobile Search Icon */}
+                        <button
+                            onClick={() => setIsSearchOpen(true)}
+                            className="flex items-center justify-center h-10 w-10 rounded-full bg-white shadow-sm border border-gray-100"
+                        >
+                            <Search className="h-4 w-4 text-slate-500" />
+                        </button>
+
+                        {/* Mobile Logo */}
+                        <div className="flex items-center gap-2 ml-2">
+                            <div className="h-8 w-8 rounded-lg bg-[#2BD67C] flex items-center justify-center text-white font-bold text-xl leading-none">
+                                B
+                            </div>
+                            <span className="font-bold text-slate-900 hidden sm:block">Bazuroo</span>
+                        </div>
+                    </div>
+
+                    {/* Search Command Trigger - Desktop */}
                     <button
-                        onClick={() => setOpen(true)}
-                        className="group flex w-96 items-center justify-between gap-3 rounded-xl bg-white px-4 py-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-gray-100 transition-all hover:border-[#2BD67C]/50 hover:shadow-md active:scale-[0.98]"
+                        onClick={() => setIsSearchOpen(true)}
+                        className="hidden md:flex group w-96 items-center justify-between gap-3 rounded-xl bg-white px-4 py-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-gray-100 transition-all hover:border-[#2BD67C]/50 hover:shadow-md active:scale-[0.98]"
                     >
                         <div className="flex items-center gap-3">
                             <Search className="h-4 w-4 text-slate-400 group-hover:text-[#2BD67C] transition-colors" />
@@ -87,7 +124,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                             <Calendar className="mr-2 h-4 w-4" />
                             <span className="text-xs font-semibold">Today, Oct 24</span>
                         </Button>
-                        <div className="h-4 w-px bg-slate-200" />
+                        <div className="hidden md:block h-4 w-px bg-slate-200" />
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -121,7 +158,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 </header>
 
                 {/* Scrollable Page Content */}
-                <main className="flex-1 overflow-y-auto px-8 pb-8">
+                <main className="flex-1 overflow-y-auto px-4 md:px-8 pb-8">
                     <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {children}
                     </div>
@@ -129,7 +166,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Global Command Dialog */}
-            <CommandDialog open={open} onOpenChange={setOpen}>
+            <CommandDialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+                <DialogTitle className="sr-only">Command Menu</DialogTitle>
                 <CommandInput placeholder="Type a command or search..." />
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>

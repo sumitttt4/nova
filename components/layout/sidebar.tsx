@@ -35,7 +35,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useNavigation } from "@/contexts/NavigationContext"
 
-export function Sidebar() {
+interface SidebarProps {
+    isMobile?: boolean
+    onClose?: () => void
+}
+
+export function Sidebar({ isMobile, onClose }: SidebarProps) {
     const pathname = usePathname()
     const { activeContext, menuItems, navigateToRoot } = useNavigation()
     const [isCollapsed, setIsCollapsed] = React.useState(false)
@@ -69,7 +74,7 @@ export function Sidebar() {
         <aside
             className={cn(
                 "group relative flex flex-col h-screen bg-white border-r border-slate-200 transition-all duration-300 ease-in-out z-30",
-                isCollapsed ? "w-[80px]" : "w-[280px]"
+                isCollapsed && !isMobile ? "w-[80px]" : "w-full md:w-[280px]"
             )}
         >
             {/* 1. Header: Logo & Brand */}
@@ -84,7 +89,7 @@ export function Sidebar() {
                     </div>
                     <div className={cn(
                         "flex flex-col opacity-100 transition-all duration-300",
-                        isCollapsed && "opacity-0 w-0 hidden"
+                        isCollapsed && !isMobile && "opacity-0 w-0 hidden"
                     )}>
                         <h1 className="truncate text-base font-bold leading-none text-slate-900">Bazuroo</h1>
                         <span className="truncate text-[10px] font-medium text-slate-500 uppercase tracking-wider">{getRoleLabel()} Console</span>
@@ -92,14 +97,16 @@ export function Sidebar() {
                 </div>
 
                 {/* Collapse Toggle (Visible on hover or absolute positioned) */}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute -right-4 top-5 z-40 h-8 w-8 rounded-full border border-slate-200 bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                >
-                    {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-                </Button>
+                {!isMobile && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute -right-4 top-5 z-40 h-8 w-8 rounded-full border border-slate-200 bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                    >
+                        {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+                    </Button>
+                )}
             </div>
 
             {/* 2. Navigation Items */}
@@ -131,19 +138,20 @@ export function Sidebar() {
                             <Link
                                 key={item.title}
                                 href={item.href}
+                                onClick={() => isMobile && onClose?.()}
                                 className={cn(
                                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ring-offset-background transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                                     isActive ? "bg-[#2BD67C]/10 text-[#2BD67C] hover:bg-[#2BD67C]/20" : "text-slate-600 hover:text-slate-900",
-                                    isCollapsed && "justify-center px-2"
+                                    isCollapsed && !isMobile && "justify-center px-2"
                                 )}
                             >
                                 <Icon className={cn("h-5 w-5 shrink-0", isActive ? "text-[#2BD67C]" : "text-slate-500")} />
-                                {!isCollapsed && (
+                                {(!isCollapsed || isMobile) && (
                                     <span className="truncate animate-in fade-in duration-300 font-semibold">
                                         {item.title}
                                     </span>
                                 )}
-                                {!isCollapsed && isActive && (
+                                {(!isCollapsed || isMobile) && isActive && (
                                     <div className="ml-auto h-2 w-2 rounded-full bg-[#2BD67C] shadow-[0_0_8px_rgba(43,214,124,0.5)]" />
                                 )}
                             </Link>

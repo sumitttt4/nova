@@ -185,7 +185,7 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900">Overviews</h1>
-                    <p className="text-slate-500 font-medium mt-1">Hello Maniya, here's what's happening {timeRange === 'daily' ? 'today' : timeRange === 'monthly' ? 'this month' : 'this year'}.</p>
+                    <p className="text-slate-500 font-medium mt-1">Hello Sumit, here's what's happening {timeRange === 'daily' ? 'today' : timeRange === 'monthly' ? 'this month' : 'this year'}.</p>
                 </div>
 
                 <div className="bg-white p-1.5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-1">
@@ -211,7 +211,7 @@ export default function DashboardPage() {
             </div>
 
             {/* High-Density Metrics Grid */}
-            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                 {/* 1. CAPACITY & DEMAND */}
                 <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                     <div className="flex items-center justify-between mb-4">

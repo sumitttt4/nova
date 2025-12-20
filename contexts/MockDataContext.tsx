@@ -212,7 +212,7 @@ export type OrderIssue = {
 
 // --- Initial Mock Data ---
 
-const MOCK_NOW = new Date("2023-11-20T10:00:00")
+const MOCK_NOW = new Date("2023-11-20T10:00:00Z")
 
 const INITIAL_APP_SETTINGS: Record<string, AppSettings> = {
     user_app: {
@@ -455,6 +455,66 @@ const INITIAL_RIDERS: Rider[] = [
             rating: 3.8, // Low
             lastOrderTime: subHours(MOCK_NOW, 4)
         }
+    },
+    {
+        id: "RIDER-REQ-007", name: "Vijay Kumar", phone: "+91 98765 11111", vehicleType: "Bike", status: "under_review", activeOrder: null, submittedAt: "10 mins ago",
+        location: { lat: 12.9716, lng: 77.5946, address: "Whitefield Zone, Bangalore" },
+        ekyc: {
+            userSubmitted: { name: "Vijay Kumar", fatherName: "Raj Kumar", dob: "1995-01-01", address: "Whitefield" },
+            apiFetched: { name: "Vijay Kumar", fatherName: "Raj Kumar", dob: "1995-01-01", address: "Whitefield" },
+            documents: { aadharFront: "", selfie: "" }
+        },
+        logistics: { plateNumber: "KA-01-AB-1234", tShirtSize: "L" },
+        onboardingFee: { status: "paid", amount: 499 },
+        metrics: { onlineTime: 0, activeTime: 0, rating: 0 }
+    },
+    {
+        id: "RIDER-REQ-008", name: "Amitabh Singh", phone: "+91 98765 22222", vehicleType: "Scooter", status: "under_review", activeOrder: null, submittedAt: "30 mins ago",
+        location: { lat: 12.9352, lng: 77.6245, address: "Koramangala, Bangalore" },
+        ekyc: {
+            userSubmitted: { name: "Amitabh Singh", fatherName: "Sohan Singh", dob: "1992-05-15", address: "Koramangala" },
+            apiFetched: { name: "Amitabh Singh", fatherName: "Sohan Singh", dob: "1992-05-15", address: "Koramangala" },
+            documents: { aadharFront: "", selfie: "" }
+        },
+        logistics: { plateNumber: "KA-05-XY-9876", tShirtSize: "M" },
+        onboardingFee: { status: "unpaid", amount: 499 },
+        metrics: { onlineTime: 0, activeTime: 0, rating: 0 }
+    },
+    {
+        id: "RIDER-REQ-009", name: "Sara Ali", phone: "+91 98765 33333", vehicleType: "Electric Bike", status: "under_review", activeOrder: null, submittedAt: "1 hour ago",
+        location: { lat: 12.9279, lng: 77.6271, address: "HSR Layout, Bangalore" },
+        ekyc: {
+            userSubmitted: { name: "Sara Ali", fatherName: "Saif Ali", dob: "1998-11-20", address: "HSR Layout" },
+            apiFetched: { name: "Sara Ali", fatherName: "Saif Ali", dob: "1998-11-20", address: "HSR Layout" },
+            documents: { aadharFront: "", selfie: "" }
+        },
+        logistics: { plateNumber: "Green-KA-01", tShirtSize: "S" },
+        onboardingFee: { status: "paid", amount: 499 },
+        metrics: { onlineTime: 0, activeTime: 0, rating: 0 }
+    },
+    {
+        id: "RIDER-REQ-010", name: "Rajesh Koothr", phone: "+91 98765 44444", vehicleType: "Bike", status: "under_review", activeOrder: null, submittedAt: "2 hours ago",
+        location: { lat: 12.9100, lng: 77.6000, address: "BTM Layout, Bangalore" },
+        ekyc: {
+            userSubmitted: { name: "Rajesh K", fatherName: "Ramesh K", dob: "1990-10-10", address: "BTM" },
+            apiFetched: { name: "Rajesh Koothrapali", fatherName: "Ramesh Koothrapali", dob: "1990-10-10", address: "BTM" },
+            documents: { aadharFront: "", selfie: "" }
+        },
+        logistics: { plateNumber: "KA-51-ZZ-1111", tShirtSize: "XL" },
+        onboardingFee: { status: "paid", amount: 499 },
+        metrics: { onlineTime: 0, activeTime: 0, rating: 0 }
+    },
+    {
+        id: "RIDER-REQ-011", name: "Priya Sharma", phone: "+91 98765 55555", vehicleType: "Scooter", status: "under_review", activeOrder: null, submittedAt: "3 hours ago",
+        location: { lat: 12.9600, lng: 77.6400, address: "Indiranagar, Bangalore" },
+        ekyc: {
+            userSubmitted: { name: "Priya S", fatherName: "Mohan S", dob: "1996-07-07", address: "London" },
+            apiFetched: { name: "Priya Sharma", fatherName: "Mohan Sharma", dob: "1996-07-07", address: "Indiranagar" },
+            documents: { aadharFront: "", selfie: "" }
+        },
+        logistics: { plateNumber: "KA-03-MN-6543", tShirtSize: "M" },
+        onboardingFee: { status: "unpaid", amount: 499 },
+        metrics: { onlineTime: 0, activeTime: 0, rating: 0 }
     }
 ]
 
