@@ -128,23 +128,40 @@ export default function LiveTrackingPage() {
                                         </div>
                                     </div>
 
-                                    {/* Mock Assigned Order */}
+                                    {/* Active Assigned Order */}
                                     <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
                                         <div className="flex items-center gap-2 text-purple-700 font-bold text-xs mb-2">
                                             <ShoppingBag size={12} />
                                             Active Delivery
                                         </div>
-                                        {liveOrders.length > 0 ? (
-                                            <div className="space-y-1">
-                                                <p className="text-sm font-semibold text-slate-900">{liveOrders[0].customerName}</p>
-                                                <div className="flex justify-between text-xs text-slate-500">
-                                                    <span>{liveOrders[0].storeName}</span>
-                                                    <span>₹{liveOrders[0].amount}</span>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <p className="text-xs text-slate-400 italic">No active order assigned.</p>
-                                        )}
+                                        {(() => {
+                                            const activeOrder = selectedRider.activeOrder
+                                                ? orders.find(o => o.id === selectedRider.activeOrder)
+                                                : null;
+
+                                            if (activeOrder) {
+                                                return (
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between items-start">
+                                                            <p className="text-sm font-semibold text-slate-900">{activeOrder.customerName}</p>
+                                                            <Badge variant="outline" className="text-[10px] h-5 bg-white border-purple-200 text-purple-700">
+                                                                {activeOrder.id}
+                                                            </Badge>
+                                                        </div>
+                                                        <div className="flex justify-between text-xs text-slate-500">
+                                                            <span>{activeOrder.storeName}</span>
+                                                            <span className="font-mono font-medium text-slate-700">₹{activeOrder.amount}</span>
+                                                        </div>
+                                                        <div className="pt-2 flex gap-2">
+                                                            <Button size="sm" variant="outline" className="h-6 text-[10px] w-full bg-white border-purple-200 text-purple-700 hover:bg-purple-100">
+                                                                Track Order
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            }
+                                            return <p className="text-xs text-slate-400 italic">No active order assigned.</p>
+                                        })()}
                                     </div>
                                 </div>
                                 <div className="p-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center px-4">

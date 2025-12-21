@@ -4,6 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useMockData } from "@/contexts/MockDataContext"
 import { Button } from "@/components/ui/button"
+import { format } from "date-fns"
 import {
     Table,
     TableBody,
@@ -24,15 +25,31 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+import { TableSkeleton } from "@/components/ui/table-skeleton"
+
 export default function UsersPage() {
     const router = useRouter()
-    const { users } = useMockData()
+    const { users, isLoading } = useMockData()
     const [searchTerm, setSearchTerm] = React.useState("")
 
     const filteredUsers = users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     )
+
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="space-y-1 text-center sm:text-left">
+                        <h1 className="text-2xl font-bold tracking-tight">Users</h1>
+                        <p className="text-muted-foreground">Manage customer accounts.</p>
+                    </div>
+                </div>
+                <TableSkeleton columns={6} />
+            </div>
+        )
+    }
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -115,7 +132,7 @@ export default function UsersPage() {
                                         {user.status.toUpperCase()}
                                     </Badge>
                                 </TableCell>
-                                <TableCell>{new Date(user.joinedAt).toLocaleDateString()}</TableCell>
+                                <TableCell>{format(new Date(user.joinedAt), "PP")}</TableCell>
                                 <TableCell className="text-right font-medium">₹{user.walletBalance}</TableCell>
                                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenu>

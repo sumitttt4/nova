@@ -64,7 +64,7 @@ const DATA_SETS = {
 }
 
 export default function DashboardPage() {
-    const { orders } = useMockData()
+    const { orders, users } = useMockData()
     const { connectSocket, disconnectSocket, isConnected, notifications } = useStore()
     const [isLoading, setIsLoading] = React.useState(true)
 
@@ -112,9 +112,9 @@ export default function DashboardPage() {
     const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
 
     // Dynamic Activity Feed with Freshness
-    const recentActivity = React.useMemo(() => [
+    const [recentActivity, setRecentActivity] = React.useState([
         {
-            id: 1,
+            id: 'init-1',
             type: "order",
             title: "New Order #4092",
             description: "Burger King • ₹450 paid",
@@ -123,7 +123,7 @@ export default function DashboardPage() {
             icon: ShoppingBag
         },
         {
-            id: 2,
+            id: 'init-2',
             type: "alert",
             title: "High Demand Alert",
             description: "Koramangala Zone overload",
@@ -132,7 +132,7 @@ export default function DashboardPage() {
             icon: TrendingUp
         },
         {
-            id: 3,
+            id: 'init-3',
             type: "store",
             title: "Store Went Live",
             description: "Fresh Mart is now open",
@@ -141,7 +141,7 @@ export default function DashboardPage() {
             icon: Store
         },
         {
-            id: 4,
+            id: 'init-4',
             type: "payout",
             title: "Payout Processed",
             description: "Batch #9921 settled",
@@ -149,7 +149,31 @@ export default function DashboardPage() {
             status: "info",
             icon: Wallet
         }
-    ], [])
+    ])
+
+    // Live Ticker Effect
+    React.useEffect(() => {
+        if (isLoading || users.length === 0) return
+
+        const interval = setInterval(() => {
+            const randomUser = users[Math.floor(Math.random() * users.length)]
+            const randomAmount = Math.floor(Math.random() * 2000) + 100
+
+            const newActivity = {
+                id: `live-${Date.now()}`,
+                type: "order",
+                title: `Order from ${randomUser.name.split(' ')[0]}`,
+                description: `Placed order for ₹${randomAmount}`,
+                timestamp: new Date(),
+                status: "success",
+                icon: ShoppingBag
+            }
+
+            setRecentActivity(prev => [newActivity, ...prev].slice(0, 5))
+        }, 5000)
+
+        return () => clearInterval(interval)
+    }, [isLoading, users])
 
     if (isLoading) {
         return (
@@ -434,39 +458,43 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    <div className="relative pl-3">
-                        {/* Timeline Line */}
-                        <div className="absolute left-[19px] top-3 bottom-0 w-[2px] bg-slate-100/80 rounded-full" />
+                    <div className="flex flex-col h-full">
+                        <div className="relative pl-3 flex-1">
+                            {/* Timeline Line */}
+                            <div className="absolute left-[19px] top-3 bottom-4 w-[2px] bg-slate-100/80 rounded-full" />
 
-                        <div className="space-y-8">
-                            {recentActivity.map((item) => (
-                                <div key={item.id} className="relative flex gap-4 group cursor-pointer">
-                                    {/* Icon Indicator */}
-                                    <div className={cn(
-                                        "relative z-10 flex-none h-10 w-10 rounded-2xl border-4 border-white shadow-sm flex items-center justify-center transition-transform duration-200 group-hover:scale-110",
-                                        item.status === 'success' ? 'bg-green-50 text-green-600 ring-1 ring-green-100' :
-                                            item.status === 'warning' ? 'bg-amber-50 text-amber-600 ring-1 ring-amber-100' :
-                                                'bg-slate-50 text-slate-600 ring-1 ring-slate-100'
-                                    )}>
-                                        <item.icon className="h-4 w-4" />
-                                    </div>
-
-                                    <div className="flex-1 py-1">
-                                        <div className="flex justify-between items-start">
-                                            <p className="text-sm font-bold text-slate-800 group-hover:text-[#2BD67C] transition-colors">{item.title}</p>
-                                            <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
-                                                {formatDistanceToNow(item.timestamp, { addSuffix: true })}
-                                            </span>
+                            <div className="space-y-8 pb-4">
+                                {recentActivity.map((item) => (
+                                    <div key={item.id} className="relative flex gap-4 group cursor-pointer animate-in slide-in-from-right-4 duration-500">
+                                        {/* Icon Indicator */}
+                                        <div className={cn(
+                                            "relative z-10 flex-none h-10 w-10 rounded-full border-4 border-white shadow-sm flex items-center justify-center transition-transform duration-200 group-hover:scale-110",
+                                            item.status === 'success' ? 'bg-green-50 text-green-600 ring-1 ring-green-100' :
+                                                item.status === 'warning' ? 'bg-amber-50 text-amber-600 ring-1 ring-amber-100' :
+                                                    'bg-slate-50 text-slate-600 ring-1 ring-slate-100'
+                                        )}>
+                                            <item.icon className="h-4 w-4" />
                                         </div>
-                                        <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">{item.description}</p>
+
+                                        <div className="flex-1 py-1">
+                                            <div className="flex justify-between items-center gap-2">
+                                                <p className="text-sm font-bold text-slate-900 group-hover:text-[#2BD67C] transition-colors line-clamp-1">{item.title}</p>
+                                                <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded-md whitespace-nowrap">
+                                                    {formatDistanceToNow(item.timestamp, { addSuffix: true })}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm font-medium text-slate-500 mt-0.5 leading-relaxed truncate">{item.description}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
 
-                        <button className="w-full mt-10 py-3 text-sm font-bold text-slate-600 hover:text-white hover:bg-slate-900 rounded-xl transition-all duration-300 border-2 border-slate-100 hover:border-slate-900">
-                            View Full Feed
-                        </button>
+                        <Link href="/orders" className="block w-full">
+                            <button className="w-full mt-6 py-3 text-sm font-bold text-slate-600 hover:text-white hover:bg-slate-900 rounded-xl transition-all duration-300 border-2 border-slate-100 hover:border-slate-900">
+                                View Full Feed
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </div>

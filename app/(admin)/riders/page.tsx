@@ -1,5 +1,8 @@
 "use client"
 
+import * as React from "react"
+import Link from "next/link"
+import { useMockData } from "@/contexts/MockDataContext"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -12,7 +15,8 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, MoreHorizontal, Filter, Bike, Phone, MapPin } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,21 +24,40 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useMockData } from "@/contexts/MockDataContext"
-import Link from "next/link"
-import { RiderLifecycle } from "@/components/riders/RiderLifecycle"
-import { RiderRatingChart } from "@/components/riders/RiderRatingChart"
+import { Search, MoreHorizontal, Filter, Bike, Phone, MapPin, Activity, Zap, Clock, PowerOff } from "lucide-react"
 
 export default function RidersPage() {
     const { riders } = useMockData()
+    const [filter, setFilter] = React.useState("all")
+    const [searchQuery, setSearchQuery] = React.useState("")
+
+    // Metrics Calculation
+    const totalRiders = riders.length
+    const activeRiders = riders.filter(r => r.status === 'active')
+    const busyRiders = riders.filter(r => r.status === 'active' && r.activeOrder)
+    const offlineRiders = riders.filter(r => r.status !== 'active')
+
+    // Filter Logic
+    const filteredRiders = riders.filter(r => {
+        const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            r.phone.includes(searchQuery)
+
+        let matchesFilter = true
+        if (filter === 'active') matchesFilter = r.status === 'active'
+        if (filter === 'busy') matchesFilter = r.status === 'active' && !!r.activeOrder
+        if (filter === 'offline') matchesFilter = r.status !== 'active'
+
+        return matchesSearch && matchesFilter
+    })
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
+            {/* Header */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="space-y-1 text-center sm:text-left">
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900">Rider Cockpit</h1>
                     <p className="text-slate-500">
-                        Monitor active riders, assignments, efficiency, and lifecycle.
+                        Live monitoring of fleet status and active assignments.
                     </p>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
@@ -53,48 +76,93 @@ export default function RidersPage() {
                 </div>
             </div>
 
-            {/* Rider Cockpit Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                <RiderLifecycle />
-                <RiderRatingChart />
+            {/* Live Metrics Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Fleet</CardTitle>
+                        <Bike className="h-4 w-4 text-slate-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{totalRiders}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Online</CardTitle>
+                        <Zap className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-green-600">{activeRiders.length}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">On Delivery</CardTitle>
+                        <Activity className="h-4 w-4 text-blue-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-blue-600">{busyRiders.length}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Offline</CardTitle>
+                        <PowerOff className="h-4 w-4 text-slate-400" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-slate-500">{offlineRiders.length}</div>
+                    </CardContent>
+                </Card>
             </div>
 
-            <div className="flex items-center gap-2">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                    <Input
-                        type="search"
-                        placeholder="Search riders..."
-                        className="pl-9 bg-white border-slate-200"
-                    />
+            {/* Controls */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <Tabs defaultValue="all" onValueChange={setFilter} className="w-full sm:w-auto">
+                    <TabsList>
+                        <TabsTrigger value="all">All Riders</TabsTrigger>
+                        <TabsTrigger value="active">Online</TabsTrigger>
+                        <TabsTrigger value="busy">On Job</TabsTrigger>
+                        <TabsTrigger value="offline">Offline</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:w-64">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                        <Input
+                            type="search"
+                            placeholder="Search by name or phone..."
+                            className="pl-9 bg-white"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
                 </div>
-                <Button variant="outline" size="icon" className="border-slate-200">
-                    <Filter className="h-4 w-4 text-slate-500" />
-                </Button>
             </div>
 
+            {/* Rider List Table */}
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <Table>
                     <TableHeader className="bg-slate-50">
                         <TableRow>
                             <TableHead className="w-[50px]"></TableHead>
                             <TableHead>Rider Name</TableHead>
-                            <TableHead>Phone</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>Current Status</TableHead>
                             <TableHead>Location</TableHead>
                             <TableHead className="text-right">Wallet</TableHead>
                             <TableHead className="text-right"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {riders.length === 0 ? (
+                        {filteredRiders.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center text-slate-500">
-                                    No riders found.
+                                <TableCell colSpan={6} className="h-32 text-center text-slate-500">
+                                    No riders found matching your filters.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            riders.map((rider) => (
+                            filteredRiders.map((rider) => (
                                 <TableRow key={rider.id} className="hover:bg-slate-50 transition-colors">
                                     <TableCell>
                                         <Avatar className="h-9 w-9 rounded-full border border-slate-100">
@@ -106,30 +174,31 @@ export default function RidersPage() {
                                         <div className="flex flex-col">
                                             <span className="font-semibold text-sm text-slate-900">{rider.name}</span>
                                             <div className="flex items-center gap-1 text-xs text-slate-500">
-                                                <Bike className="h-3 w-3" />
-                                                {rider.vehicleType}
+                                                <Phone className="h-3 w-3" />
+                                                {rider.phone}
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-sm text-slate-500">
-                                        <div className="flex items-center gap-1">
-                                            <Phone className="h-3 w-3" />
-                                            {rider.phone}
-                                        </div>
-                                    </TableCell>
                                     <TableCell>
-                                        <Badge
-                                            variant="outline"
-                                            className={
-                                                rider.status === "active"
-                                                    ? "bg-green-100 text-green-700 border-green-200 capitalize"
-                                                    : rider.status === "under_review" // Using 'under_review' as mapped before
-                                                        ? "bg-orange-100 text-orange-700 border-orange-200 capitalize"
-                                                        : "bg-gray-100 text-gray-700 border-gray-200 capitalize"
-                                            }
-                                        >
-                                            {rider.status.replace('_', ' ')}
-                                        </Badge>
+                                        <div className="flex items-center gap-2">
+                                            <Badge
+                                                variant="outline"
+                                                className={
+                                                    rider.status === "active"
+                                                        ? "bg-green-100 text-green-700 border-green-200 shadow-none px-2 py-0.5"
+                                                        : rider.status === "under_review"
+                                                            ? "bg-orange-100 text-orange-700 border-orange-200 shadow-none"
+                                                            : "bg-slate-100 text-slate-700 border-slate-200 shadow-none"
+                                                }
+                                            >
+                                                {rider.status === "active" ? "Online" : rider.status.replace('_', ' ')}
+                                            </Badge>
+                                            {rider.activeOrder && (
+                                                <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 shadow-none">
+                                                    On Order
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-1 text-sm text-slate-600 max-w-[200px] truncate" title={rider.location.address}>

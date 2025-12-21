@@ -107,10 +107,10 @@ export default function MerchantsPage() {
                                         <TableCell>
                                             <div className="flex flex-col">
                                                 <span className="font-semibold text-sm text-slate-900">{merchant.storeName}</span>
-                                                <span className="text-xs text-slate-500">{merchant.personal?.email || "N/A"}</span>
+                                                <span className="text-xs text-slate-500">{merchant.email || merchant.personal?.email || "N/A"}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-sm text-slate-700">{merchant.personal?.name || "N/A"}</TableCell>
+                                        <TableCell className="text-sm text-slate-700">{merchant.personName || merchant.personal?.name || "N/A"}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1.5 text-slate-600 text-sm">
                                                 <Store className="h-3.5 w-3.5" />

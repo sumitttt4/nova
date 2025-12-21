@@ -20,13 +20,21 @@ export function RiderRatingChart() {
 
     riders.forEach(r => {
         const rating = r.metrics?.rating || 0
-        if (rating < 4.0 && rating > 0) {
-            distribution[0].count++
-            lowRatedRidersConfirm++
+        if (rating > 0) {
+            if (rating < 4.0) {
+                distribution[0].count++
+                lowRatedRidersConfirm++
+            }
+            else if (rating >= 4.0 && rating < 4.5) distribution[1].count++
+            else if (rating >= 4.5) distribution[2].count++
         }
-        else if (rating >= 4.0 && rating < 4.5) distribution[1].count++
-        else if (rating >= 4.5) distribution[2].count++
     })
+
+    const activeRiders = riders.filter(r => (r.metrics?.rating || 0) > 0)
+    const avgRating = activeRiders.length > 0
+        ? (activeRiders.reduce((acc, r) => acc + (r.metrics?.rating || 0), 0) / activeRiders.length).toFixed(1)
+        : "0.0"
+
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
@@ -70,7 +78,7 @@ export function RiderRatingChart() {
                 <div className="mt-4 pt-4 border-t border-slate-100">
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-500">Avg Fleet Rating</span>
-                        <span className="font-bold text-slate-900">4.4 / 5.0</span>
+                        <span className="font-bold text-slate-900">{avgRating} / 5.0</span>
                     </div>
                     {lowRatedRidersConfirm > 0 && (
                         <div className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded flex items-center gap-2">

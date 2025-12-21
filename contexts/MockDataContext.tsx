@@ -2,6 +2,8 @@
 
 import * as React from "react"
 import { format, subDays, subHours } from "date-fns"
+import api from "@/lib/api"
+import { generateUsers, generateRiders, generateOrders, generateMerchants } from "@/lib/dummy-data"
 
 // --- Types ---
 
@@ -135,6 +137,7 @@ export type Order = {
     amount: number
     status: "preparing" | "delivered" | "cancelled" | "ready"
     createdAt: Date
+    customerId?: string
 }
 
 export type Zone = {
@@ -259,17 +262,6 @@ const INITIAL_APP_SETTINGS: Record<string, AppSettings> = {
     }
 }
 
-const INITIAL_USERS: User[] = [
-    {
-        id: "USR-001", name: "Rahul Sharma", email: "rahul@example.com", phone: "+91 9876543210", walletBalance: 450, deviceVersion: "0.9.0", platform: "android", joinedAt: "2023-11-01T10:00:00Z", status: "active",
-        savedAddresses: [{ id: "ADDR-1", label: "Home", address: "B-12, Karol Bagh, New Delhi" }, { id: "ADDR-2", label: "Work", address: "DLF Cyber City, Gurgaon" }]
-    },
-    {
-        id: "USR-002", name: "Priya Patel", email: "priya@example.com", phone: "+91 9876543211", walletBalance: 1200, deviceVersion: "1.0.0", platform: "ios", joinedAt: "2023-11-05T10:00:00Z", status: "warned",
-        savedAddresses: [{ id: "ADDR-3", label: "Home", address: "M-Block, GK-1, New Delhi" }]
-    }
-]
-
 const INITIAL_ZONES: Zone[] = [
     {
         id: "ZONE-001",
@@ -291,269 +283,41 @@ const INITIAL_ZONES: Zone[] = [
     }
 ]
 
-const INITIAL_RIDERS: Rider[] = [
-    {
-        id: "RIDER-001",
-        name: "Vikram Singh",
-        phone: "+91 98765 43210",
-        vehicleType: "Bike",
-        status: "active",
-        activeOrder: "ORD-1122", // Active
-        submittedAt: "2 hours ago",
-        location: {
-            lat: 28.6315,
-            lng: 77.2167,
-            address: "Connaught Place, New Delhi"
-        },
-        ekyc: {
-            userSubmitted: {
-                name: "Vikram Singh",
-                fatherName: "Ramesh Singh",
-                dob: "1995-05-15",
-                address: "Hz. 12, Paharganj, Delhi"
-            },
-            apiFetched: {
-                name: "Vikram Singh",
-                fatherName: "Ramesh Singh",
-                dob: "1995-05-15",
-                address: "Hz. 12, Paharganj, Delhi"
-            },
-            documents: {
-                aadharFront: "/placeholder-aadhar.jpg",
-                selfie: "/placeholder-selfie.jpg"
-            }
-        },
-        logistics: {
-            plateNumber: "DL-01-AB-1234",
-            tShirtSize: "L"
-        },
-        onboardingFee: {
-            status: "paid",
-            amount: 999,
-            txnId: "TXN-FEE-001"
-        },
-        metrics: {
-            onlineTime: 240,
-            activeTime: 180,
-            rating: 4.8,
-            lastOrderTime: MOCK_NOW
-        }
-    },
-    {
-        id: "RIDER-002",
-        name: "Rahul K",
-        phone: "+91 88888 77777",
-        vehicleType: "Cycle",
-        status: "active",
-        activeOrder: null, // Idle
-        submittedAt: "4 hours ago",
-        location: {
-            lat: 28.5480,
-            lng: 77.2010,
-            address: "Hauz Khas Village, New Delhi"
-        },
-        ekyc: {
-            userSubmitted: {
-                name: "Rahul Kumar",
-                fatherName: "Ashok K",
-                dob: "1998-08-20",
-                address: "Green Park, Delhi"
-            },
-            apiFetched: {
-                name: "Rahul Kumar",
-                fatherName: "Ashok Kumar",
-                dob: "1998-08-20",
-                address: "Green Park, Delhi"
-            },
-            documents: {
-                aadharFront: "/placeholder-aadhar-2.jpg",
-                selfie: "/placeholder-selfie-2.jpg"
-            }
-        },
-        logistics: {
-            plateNumber: "N/A",
-            tShirtSize: "M"
-        },
-        onboardingFee: {
-            status: "unpaid",
-            amount: 999
-        },
-        joiningDate: subDays(MOCK_NOW, 0),
-        walletBalance: 0,
-        metrics: {
-            onlineTime: 120,
-            activeTime: 10,
-            rating: 3.5, // Low rating flag
-            lastOrderTime: subHours(MOCK_NOW, 3)
-        }
-    },
-    {
-        id: "RIDER-003",
-        name: "Amit Patel",
-        phone: "+91 99887 77665",
-        vehicleType: "Bike",
-        status: "active",
-        activeOrder: "ORD-9999", // Active
-        submittedAt: "5 days ago",
-        location: {
-            lat: 28.5823,
-            lng: 77.0500,
-            address: "Sector 10, Dwarka, New Delhi"
-        },
-        ekyc: {
-            userSubmitted: {
-                name: "Amit Patel",
-                fatherName: "Sanjay Patel",
-                dob: "1994-11-10",
-                address: "Palam, Delhi"
-            },
-            apiFetched: {
-                name: "Amit Patel",
-                fatherName: "Sanjay Patel",
-                dob: "1994-11-10",
-                address: "Palam, Delhi"
-            },
-            documents: { aadharFront: "", selfie: "" }
-        },
-        logistics: { plateNumber: "DL-05-XY-9988", tShirtSize: "XL" },
-        onboardingFee: { status: "paid", amount: 999, txnId: "TXN-888" },
-        joiningDate: subDays(MOCK_NOW, 5),
-        walletBalance: 1250,
-        metrics: {
-            onlineTime: 300,
-            activeTime: 280,
-            rating: 4.9,
-            lastOrderTime: MOCK_NOW
-        }
-    },
-    {
-        id: "RIDER-004", name: "Suresh", phone: "123", vehicleType: "Bike", status: "active", activeOrder: null, submittedAt: "",
-        location: { lat: 28.6320, lng: 77.2180, address: "Barakhamba Road, New Delhi" }, ekyc: {} as any, logistics: {} as any, onboardingFee: {} as any,
-        metrics: {
-            onlineTime: 180,
-            activeTime: 40,
-            rating: 4.2,
-            lastOrderTime: subHours(MOCK_NOW, 1) // > 30 mins idle
-        }
-    },
-    {
-        id: "RIDER-005", name: "Mahesh", phone: "123", vehicleType: "Bike", status: "active", activeOrder: "ORD-88", submittedAt: "",
-        location: { lat: 28.6300, lng: 77.2150, address: "Janpath, New Delhi" }, ekyc: {} as any, logistics: {} as any, onboardingFee: {} as any,
-        metrics: {
-            onlineTime: 60,
-            activeTime: 10,
-            rating: 4.5,
-            lastOrderTime: MOCK_NOW
-        }
-    },
-    {
-        id: "RIDER-006", name: "Ganesh", phone: "123", vehicleType: "Bike", status: "active", activeOrder: null, submittedAt: "",
-        location: { lat: 28.5490, lng: 77.1990, address: "IIT Delhi Area, New Delhi" }, ekyc: {} as any, logistics: {} as any, onboardingFee: {} as any,
-        metrics: {
-            onlineTime: 400,
-            activeTime: 50,
-            rating: 3.8, // Low
-            lastOrderTime: subHours(MOCK_NOW, 4)
-        }
-    },
-    {
-        id: "RIDER-REQ-007", name: "Vijay Kumar", phone: "+91 98765 11111", vehicleType: "Bike", status: "under_review", activeOrder: null, submittedAt: "10 mins ago",
-        location: { lat: 12.9716, lng: 77.5946, address: "Whitefield Zone, Bangalore" },
-        ekyc: {
-            userSubmitted: { name: "Vijay Kumar", fatherName: "Raj Kumar", dob: "1995-01-01", address: "Whitefield" },
-            apiFetched: { name: "Vijay Kumar", fatherName: "Raj Kumar", dob: "1995-01-01", address: "Whitefield" },
-            documents: { aadharFront: "", selfie: "" }
-        },
-        logistics: { plateNumber: "KA-01-AB-1234", tShirtSize: "L" },
-        onboardingFee: { status: "paid", amount: 499 },
-        metrics: { onlineTime: 0, activeTime: 0, rating: 0 }
-    },
-    {
-        id: "RIDER-REQ-008", name: "Amitabh Singh", phone: "+91 98765 22222", vehicleType: "Scooter", status: "under_review", activeOrder: null, submittedAt: "30 mins ago",
-        location: { lat: 12.9352, lng: 77.6245, address: "Koramangala, Bangalore" },
-        ekyc: {
-            userSubmitted: { name: "Amitabh Singh", fatherName: "Sohan Singh", dob: "1992-05-15", address: "Koramangala" },
-            apiFetched: { name: "Amitabh Singh", fatherName: "Sohan Singh", dob: "1992-05-15", address: "Koramangala" },
-            documents: { aadharFront: "", selfie: "" }
-        },
-        logistics: { plateNumber: "KA-05-XY-9876", tShirtSize: "M" },
-        onboardingFee: { status: "unpaid", amount: 499 },
-        metrics: { onlineTime: 0, activeTime: 0, rating: 0 }
-    },
-    {
-        id: "RIDER-REQ-009", name: "Sara Ali", phone: "+91 98765 33333", vehicleType: "Electric Bike", status: "under_review", activeOrder: null, submittedAt: "1 hour ago",
-        location: { lat: 12.9279, lng: 77.6271, address: "HSR Layout, Bangalore" },
-        ekyc: {
-            userSubmitted: { name: "Sara Ali", fatherName: "Saif Ali", dob: "1998-11-20", address: "HSR Layout" },
-            apiFetched: { name: "Sara Ali", fatherName: "Saif Ali", dob: "1998-11-20", address: "HSR Layout" },
-            documents: { aadharFront: "", selfie: "" }
-        },
-        logistics: { plateNumber: "Green-KA-01", tShirtSize: "S" },
-        onboardingFee: { status: "paid", amount: 499 },
-        metrics: { onlineTime: 0, activeTime: 0, rating: 0 }
-    },
-    {
-        id: "RIDER-REQ-010", name: "Rajesh Koothr", phone: "+91 98765 44444", vehicleType: "Bike", status: "under_review", activeOrder: null, submittedAt: "2 hours ago",
-        location: { lat: 12.9100, lng: 77.6000, address: "BTM Layout, Bangalore" },
-        ekyc: {
-            userSubmitted: { name: "Rajesh K", fatherName: "Ramesh K", dob: "1990-10-10", address: "BTM" },
-            apiFetched: { name: "Rajesh Koothrapali", fatherName: "Ramesh Koothrapali", dob: "1990-10-10", address: "BTM" },
-            documents: { aadharFront: "", selfie: "" }
-        },
-        logistics: { plateNumber: "KA-51-ZZ-1111", tShirtSize: "XL" },
-        onboardingFee: { status: "paid", amount: 499 },
-        metrics: { onlineTime: 0, activeTime: 0, rating: 0 }
-    },
-    {
-        id: "RIDER-REQ-011", name: "Priya Sharma", phone: "+91 98765 55555", vehicleType: "Scooter", status: "under_review", activeOrder: null, submittedAt: "3 hours ago",
-        location: { lat: 12.9600, lng: 77.6400, address: "Indiranagar, Bangalore" },
-        ekyc: {
-            userSubmitted: { name: "Priya S", fatherName: "Mohan S", dob: "1996-07-07", address: "London" },
-            apiFetched: { name: "Priya Sharma", fatherName: "Mohan Sharma", dob: "1996-07-07", address: "Indiranagar" },
-            documents: { aadharFront: "", selfie: "" }
-        },
-        logistics: { plateNumber: "KA-03-MN-6543", tShirtSize: "M" },
-        onboardingFee: { status: "unpaid", amount: 499 },
-        metrics: { onlineTime: 0, activeTime: 0, rating: 0 }
-    }
-]
-
 const INITIAL_MERCHANTS: Merchant[] = [
     {
-        id: "68a736f63eca10797799f9f1", merchantId: "MER_49212252", storeId: "STORE_35029811", ownerUserId: "USR_41728842", personName: "Manish Ranjann",
-        storeName: "Manish MedicalWalllllllllllah", storeType: "grocery_food", storeLabel: "Pharmacy (OTC)", phone: "6205112773", altPhone: "6205112773", email: "mnbvc@gmail.com",
+        id: "68a736f63eca10797799f9f1", merchantId: "MER_49212252", ownerUserId: "USR_41728842", personName: "Manish Ranjann",
+        storeName: "Manish MedicalWallah", storeType: "grocery_food", storeLabel: "Grocery & Essentials", phone: "6205112773", altPhone: "6205112773", email: "mnbvc@gmail.com",
         status: "approved", address: { line1: "Lajpat Nagar II", line2: "Central Market", city: "New Delhi", state: "Delhi", pincode: "110024", fullAddress: "Lajpat Nagar II, Central Market, New Delhi, India", lat: 28.5693, lng: 77.2458 },
         location: "Lajpat Nagar, New Delhi", coordinates: { lat: 28.5693, lng: 77.2458 }, personal: { name: "Manish Ranjann", phone: "6205112773", email: "mnbvc@gmail.com" },
         submittedAt: "2025-08-21T15:10:46.019Z", openHours: { timingMode: "custom", storeTiming: { monday: { open: "11:00", close: "23:59", closed: false } } as any },
-        walletBalance: 0, progress: { storeProfile: true, kycSubmitted: true, agreementDone: true, agreementAccepted: true, live: true },
+        walletBalance: 15400, progress: { storeProfile: true, kycSubmitted: true, agreementDone: true, agreementAccepted: true, live: true },
         flags: { storeAdded: false, blocked: false }, storePhoto: "stores/STORE_35029811/banner_9f5672e6-90a1-41d2-8534-866751644b8a.webp",
         activePlan: { name: "Business", price: 9999, status: "active" },
-        catalogStatus: {
-            totalItems: 150,
-            outOfStock: 12,
-            essentialOutOfStock: true
-        }
+        catalogStatus: { totalItems: 150, outOfStock: 12, essentialOutOfStock: true }, storeId: "STORE_35029811"
+    },
+    // Keep other minimal merchants for fallback or initial rendering
+    {
+        id: "MER-002", merchantId: "MER_002", ownerUserId: "USR-003", personName: "Sohan Lal",
+        storeName: "Saket Supermart", storeType: "grocery_food", storeLabel: "Supermarket", phone: "9811223344", email: "saket.mart@example.com",
+        status: "approved", address: { line1: "J-Block", line2: "Saket", city: "New Delhi", state: "Delhi", pincode: "110017", fullAddress: "J-Block, Saket, New Delhi", lat: 28.5244, lng: 77.2188 },
+        location: "Saket, Delhi", openHours: { timingMode: "everyday", storeTiming: {} as any },
+        walletBalance: 45000, progress: { storeProfile: true, kycSubmitted: true, agreementDone: true, agreementAccepted: true, live: true },
+        flags: { storeAdded: true, blocked: false }, submittedAt: "2025-10-01T10:00:00Z", catalogStatus: { totalItems: 500, outOfStock: 5, essentialOutOfStock: false }, storeId: "STORE_GROCERY_001"
     }
 ]
 
 const INITIAL_WITHDRAWALS: Withdrawal[] = [
-    { id: "TXN-991", storeId: "STR-001", storeName: "Spice Garden", amount: 12500, status: "processing", requestDate: MOCK_NOW, accountNumber: "**** 8821" },
-    { id: "TXN-992", storeId: "STR-002", storeName: "Burger King", amount: 45000, status: "paid", requestDate: subDays(MOCK_NOW, 1), accountNumber: "**** 4452" },
-]
-
-const INITIAL_ORDERS: Order[] = [
-    { id: "ORD-1122", customerName: "Rahul Dravid", storeName: "Spice Garden", amount: 450, status: "preparing", createdAt: MOCK_NOW },
-    { id: "ORD-1121", customerName: "Priya S", storeName: "Daily Fresh", amount: 120, status: "delivered", createdAt: subHours(MOCK_NOW, 1) },
+    { id: "TXN-991", storeId: "STORE_35029811", storeName: "Manish MedicalWallah", amount: 12500, status: "processing", requestDate: MOCK_NOW, accountNumber: "**** 8821" },
 ]
 
 const INITIAL_PAYOUTS: Payout[] = [
-    { id: "PO-001", merchantName: "Spice Garden", amount: 15400, status: "processed", date: subDays(MOCK_NOW, 1), transactionId: "TXN_HDFC_8382" },
-    { id: "PO-002", merchantName: "Burger King", amount: 28900, status: "pending", date: MOCK_NOW, transactionId: "TXN_SBI_9921" },
+    { id: "PO-001", merchantName: "Manish MedicalWallah", amount: 15400, status: "processed", date: subDays(MOCK_NOW, 1), transactionId: "TXN_HDFC_8382" },
 ]
 
 const INITIAL_ISSUES: OrderIssue[] = [
     { id: "ISS-001", orderId: "ORD-1122", customerName: "Rahul Dravid", type: "missing_item", priority: "high", status: "open", reportedAt: MOCK_NOW, description: "Ordered 2 Naans, received only 1." },
 ]
+
 
 interface MockDataContextType {
     merchants: Merchant[]
@@ -565,6 +329,7 @@ interface MockDataContextType {
     orderIssues: OrderIssue[]
     appSettings: Record<string, AppSettings>
     zones: Zone[]
+    isLoading: boolean
 
     // Actions
     updateMerchantStatus: (id: string, status: MerchantStatus, reasons?: string[]) => void
@@ -573,6 +338,7 @@ interface MockDataContextType {
     approveWithdrawal: (id: string) => void
     rejectWithdrawal: (id: string) => void
     addOrder: (order: Partial<Order>) => void
+    updateOrderStatus: (id: string, status: Order['status']) => void
     updateAppSettings: (key: string, newSettings: AppSettings) => void
     toggleZoneSurge: (id: string, enabled: boolean) => void
 }
@@ -580,23 +346,93 @@ interface MockDataContextType {
 const MockDataContext = React.createContext<MockDataContextType | undefined>(undefined)
 
 export function MockDataProvider({ children }: { children: React.ReactNode }) {
+    const [isLoading, setIsLoading] = React.useState(true)
     const [merchants, setMerchants] = React.useState<Merchant[]>(INITIAL_MERCHANTS)
     const [withdrawals, setWithdrawals] = React.useState<Withdrawal[]>(INITIAL_WITHDRAWALS)
-    const [orders, setOrders] = React.useState<Order[]>(INITIAL_ORDERS)
-    const [riders, setRiders] = React.useState<Rider[]>(INITIAL_RIDERS)
-    const [users, setUsers] = React.useState<User[]>(INITIAL_USERS)
-    const [payouts] = React.useState<Payout[]>(INITIAL_PAYOUTS)
-    const [orderIssues] = React.useState<OrderIssue[]>(INITIAL_ISSUES)
+    const [orders, setOrders] = React.useState<Order[]>([])
+    const [riders, setRiders] = React.useState<Rider[]>([])
+    const [users, setUsers] = React.useState<User[]>([])
+    const [payouts, setPayouts] = React.useState<Payout[]>(INITIAL_PAYOUTS)
+    const [orderIssues, setOrderIssues] = React.useState<OrderIssue[]>(INITIAL_ISSUES)
     const [appSettings, setAppSettings] = React.useState<Record<string, AppSettings>>(INITIAL_APP_SETTINGS)
     const [zones, setZones] = React.useState<Zone[]>(INITIAL_ZONES)
 
-    const updateAppSettings = (key: string, newSettings: AppSettings) => {
-        setAppSettings(prev => ({ ...prev, [key]: newSettings }))
-    }
+    // Data Versioning
+    const DATA_VERSION = '2.1'
 
-    const toggleZoneSurge = (id: string, enabled: boolean) => {
-        setZones(prev => prev.map(z => z.id === id ? { ...z, surgeEnabled: enabled } : z))
-    }
+    // Load Data Effect
+    React.useEffect(() => {
+        const loadData = async () => {
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 800))
+
+            try {
+                // Check Version
+                const currentVersion = localStorage.getItem('bazuroo_data_version')
+                if (currentVersion !== DATA_VERSION) {
+                    console.log("Data version mismatch. Resetting mock data...")
+                    localStorage.removeItem('bazuroo_users')
+                    localStorage.removeItem('bazuroo_riders')
+                    localStorage.removeItem('bazuroo_orders')
+                    localStorage.removeItem('bazuroo_merchants')
+                }
+
+                // Try loading from localStorage
+                const localUsers = localStorage.getItem('bazuroo_users')
+                const localRiders = localStorage.getItem('bazuroo_riders')
+                const localOrders = localStorage.getItem('bazuroo_orders')
+                const localMerchants = localStorage.getItem('bazuroo_merchants')
+
+                let loadedMerchants = INITIAL_MERCHANTS
+
+                if (localMerchants) {
+                    loadedMerchants = JSON.parse(localMerchants)
+                    setMerchants(loadedMerchants)
+                } else {
+                    // Generate if missing
+                    const generatedMerchants = generateMerchants(10)
+                    loadedMerchants = [...INITIAL_MERCHANTS, ...generatedMerchants]
+                    setMerchants(loadedMerchants)
+                }
+
+                if (localUsers && localRiders && localOrders) {
+                    console.log("Loading data from LocalStorage...")
+                    setUsers(JSON.parse(localUsers))
+                    setRiders(JSON.parse(localRiders))
+                    setOrders(JSON.parse(localOrders))
+                } else {
+                    console.log("Generating fresh Mock Data...")
+                    const newUsers = generateUsers(50)
+                    const newRiders = generateRiders(20)
+
+                    // Use loadedMerchants (which is either from LS or newly generated) for orders
+                    const newOrders = generateOrders(100, newUsers, loadedMerchants)
+
+                    setUsers(newUsers)
+                    setRiders(newRiders)
+                    setOrders(newOrders)
+                }
+            } catch (e) {
+                console.error("Error loading mock data", e)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        loadData()
+    }, [])
+
+    // Persistence Effect
+    React.useEffect(() => {
+        if (!isLoading && users.length > 0) {
+            localStorage.setItem('bazuroo_users', JSON.stringify(users))
+            localStorage.setItem('bazuroo_riders', JSON.stringify(riders))
+            localStorage.setItem('bazuroo_orders', JSON.stringify(orders))
+            localStorage.setItem('bazuroo_merchants', JSON.stringify(merchants))
+            localStorage.setItem('bazuroo_data_version', DATA_VERSION)
+        }
+    }, [users, riders, orders, merchants, isLoading])
+
 
     const updateMerchantStatus = (id: string, status: MerchantStatus, reasons: string[] = []) => {
         setMerchants(prev => prev.map(m => m.id === id ? { ...m, status, rejectionReasons: reasons } : m))
@@ -607,32 +443,71 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     }
 
     const addNewMerchant = (data: Partial<Merchant>) => {
-        const newMerchant = {
-            id: `MER-REQ-${Math.floor(Math.random() * 1000)}`,
-            storeName: "New Store", storeType: "General", status: "under_review",
-            address: { line1: "", line2: "", city: "", state: "", pincode: "", fullAddress: "" },
-            openHours: { timingMode: "custom", storeTiming: {} },
-            walletBalance: 0,
-            progress: { storeProfile: true, kycSubmitted: false, agreementDone: false, agreementAccepted: false, live: false },
-            flags: { storeAdded: false, blocked: false },
-            submittedAt: new Date().toISOString(),
-            personal: { name: "", phone: "", email: "" },
-            ...data
+        const newMerchant: Merchant = {
+            ...INITIAL_MERCHANTS[0],
+            id: `MER-${Date.now()}`,
+            merchantId: `MER_${Math.floor(Math.random() * 100000)}`,
+            storeId: `STORE_${Math.floor(Math.random() * 100000)}`,
+            ...data,
+            submittedAt: new Date().toISOString()
         } as Merchant
         setMerchants(prev => [newMerchant, ...prev])
     }
 
-    const approveWithdrawal = (id: string) => { setWithdrawals(prev => prev.map(w => w.id === id ? { ...w, status: "paid" } : w)) }
-    const rejectWithdrawal = (id: string) => { setWithdrawals(prev => prev.map(w => w.id === id ? { ...w, status: "failed" } : w)) }
+    const approveWithdrawal = (id: string) => {
+        setWithdrawals(prev => prev.map(w => w.id === id ? { ...w, status: 'paid' } : w))
+    }
+
+    const rejectWithdrawal = (id: string) => {
+        setWithdrawals(prev => prev.map(w => w.id === id ? { ...w, status: 'failed' } : w))
+    }
+
     const addOrder = (order: Partial<Order>) => {
-        const newOrder = { id: `ORD-${Math.random()}`, customerName: "New", storeName: "Store", amount: 0, status: "preparing", createdAt: new Date(), ...order } as Order
+        const newOrder: Order = {
+            id: `ORD-${Date.now()}`,
+            customerName: "New Customer",
+            storeName: "Store",
+            amount: 0,
+            status: "preparing",
+            createdAt: new Date(),
+            ...order
+        } as Order
         setOrders(prev => [newOrder, ...prev])
+    }
+
+    const updateOrderStatus = (id: string, status: Order['status']) => {
+        setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o))
+    }
+
+    const updateAppSettings = (key: string, newSettings: AppSettings) => {
+        setAppSettings(prev => ({ ...prev, [key]: newSettings }))
+    }
+
+    const toggleZoneSurge = (id: string, enabled: boolean) => {
+        setZones(prev => prev.map(z => z.id === id ? { ...z, surgeEnabled: enabled } : z))
     }
 
     return (
         <MockDataContext.Provider value={{
-            merchants, withdrawals, orders, riders, users, payouts, orderIssues, appSettings, zones,
-            updateMerchantStatus, updateRiderStatus, addNewMerchant, approveWithdrawal, rejectWithdrawal, addOrder, updateAppSettings, toggleZoneSurge
+            merchants,
+            withdrawals,
+            orders,
+            riders,
+            users,
+            payouts,
+            orderIssues,
+            appSettings,
+            zones,
+            isLoading,
+            updateMerchantStatus,
+            updateRiderStatus,
+            addNewMerchant,
+            approveWithdrawal,
+            rejectWithdrawal,
+            addOrder,
+            updateOrderStatus,
+            updateAppSettings,
+            toggleZoneSurge
         }}>
             {children}
         </MockDataContext.Provider>
@@ -641,6 +516,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 
 export function useMockData() {
     const context = React.useContext(MockDataContext)
-    if (context === undefined) { throw new Error("useMockData must be used within a MockDataProvider") }
+    if (context === undefined) {
+        throw new Error("useMockData must be used within a MockDataProvider")
+    }
     return context
 }
