@@ -15,7 +15,9 @@ import {
     CheckCircle2,
     ShieldAlert,
     History,
-    FileCheck
+    FileCheck,
+    Calculator,
+    Landmark
 } from "lucide-react"
 
 // --- Types ---
@@ -50,7 +52,9 @@ const IconMap: Record<string, React.ElementType> = {
     CheckCircle2,
     ShieldAlert,
     History,
-    FileCheck
+    FileCheck,
+    Calculator,
+    Landmark
 }
 
 // --- Menu Configuration ---

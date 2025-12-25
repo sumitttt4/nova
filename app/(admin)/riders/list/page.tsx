@@ -299,7 +299,7 @@ function RiderDatabaseContent() {
                                                                 </div>
                                                                 <div className="flex justify-between">
                                                                     <span className="text-slate-500">DOB</span>
-                                                                    <span className="font-medium">{selectedRider.ekyc.apiFetched.dob}</span>
+                                                                    <span className="font-medium">{selectedRider.ekyc?.apiFetched?.dob || 'N/A'}</span>
                                                                 </div>
                                                             </div>
 

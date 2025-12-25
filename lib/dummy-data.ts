@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
-import { User, Order, Rider, Merchant, OrderIssue, RiderPayout, Settlement, Payout } from '@/contexts/MockDataContext';
-import { subDays, subHours } from 'date-fns';
+import { User, Order, Rider, Merchant, OrderIssue, RiderPayout, Settlement, Payout, TaxRecord, WalletTransaction } from '@/contexts/MockDataContext';
+import { subDays, subHours, format } from 'date-fns';
 
 export function generateUsers(count: number): User[] {
     return Array.from({ length: count }).map((_, i) => ({
@@ -236,4 +236,61 @@ export function generateSettlements(count: number, merchants: Merchant[], riders
             transactionReference: `TXNS-${faker.string.numeric(12)}`
         } as Settlement;
     }).filter(Boolean); // Filter out potential nulls
+}
+
+export function generateTaxRecords(count: number, merchants: Merchant[]): TaxRecord[] {
+    if (!merchants || merchants.length === 0) return [];
+
+    return Array.from({ length: count }).map(() => {
+        const merchant = faker.helpers.arrayElement(merchants);
+        const type = faker.helpers.arrayElement(['GST_INPUT', 'GST_OUTPUT', 'TDS_PAYABLE', 'TCS_COLLECTED']) as TaxRecord['type'];
+        const amount = parseFloat(faker.finance.amount({ min: 100, max: 5000, dec: 2 }));
+
+        return {
+            id: `TAX-${faker.string.alphanumeric(8).toUpperCase()}`,
+            entityId: merchant.id,
+            entityName: merchant.storeName,
+            type: type,
+            amount: amount,
+            taxableAmount: amount * (type === 'GST_OUTPUT' ? 100 / 18 : 100), // Quick est
+            rate: type.includes('GST') ? 18 : (type === 'TDS_PAYABLE' ? 1 : 1),
+            period: format(faker.date.past(), 'yyyy-MM'),
+            status: faker.helpers.weightedArrayElement([{ weight: 0.7, value: 'filed' }, { weight: 0.2, value: 'pending' }, { weight: 0.1, value: 'paid' }]),
+            date: faker.date.past()
+        } as TaxRecord;
+    });
+}
+
+export function generateWalletTransactions(count: number, merchants: Merchant[], riders: Rider[]): WalletTransaction[] {
+    if ((!merchants || merchants.length === 0) && (!riders || riders.length === 0)) return [];
+
+    return Array.from({ length: count }).map(() => {
+        const isMerchant = Math.random() > 0.4;
+        let walletId: string;
+
+        if (isMerchant && merchants.length > 0) {
+            walletId = faker.helpers.arrayElement(merchants).id;
+        } else if (riders.length > 0) {
+            walletId = faker.helpers.arrayElement(riders).id;
+        } else {
+            return null as unknown as WalletTransaction;
+        }
+
+        const type = faker.helpers.arrayElement(['credit', 'debit']) as 'credit' | 'debit';
+        const category = type === 'credit'
+            ? faker.helpers.arrayElement(['order_revenue', 'bonus', 'adjustment'])
+            : faker.helpers.arrayElement(['payout', 'commission', 'tax_deduction', 'penalty']);
+
+        return {
+            id: `WTX-${faker.string.alphanumeric(10).toUpperCase()}`,
+            walletId: walletId,
+            amount: parseFloat(faker.finance.amount({ min: 10, max: 2000, dec: 2 })),
+            type: type,
+            category: category,
+            description: `${faker.word.adjective()} ${category.replace('_', ' ')}`,
+            referenceId: `REF-${faker.string.alphanumeric(6)}`,
+            date: faker.date.recent({ days: 30 }),
+            balanceAfter: parseFloat(faker.finance.amount({ min: 1000, max: 50000, dec: 2 }))
+        } as WalletTransaction;
+    }).filter(Boolean);
 }

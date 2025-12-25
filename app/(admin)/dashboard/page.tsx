@@ -32,6 +32,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { DeliveryPerformance } from "@/components/dashboard/DeliveryPerformance"
 import { useMockData } from "@/contexts/MockDataContext"
 import { useStore } from "@/lib/store"
 import { isSameDay, isSameMonth, isSameYear, subDays, formatDistanceToNow, subMinutes, subHours } from "date-fns"
@@ -306,7 +307,10 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* 3. NETWORK HEALTH */}
+                {/* 3. DELIVERY PERFORMANCE (New Widget) */}
+                <DeliveryPerformance />
+
+                {/* 4. NETWORK HEALTH */}
                 <div className={cn(
                     "rounded-2xl border bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between transition-colors duration-300",
                     (92 - 85) > 0 ? "border-red-200 bg-red-50/30" : "border-gray-100"

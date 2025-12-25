@@ -3,7 +3,7 @@
 import * as React from "react"
 import { format, subDays, subHours } from "date-fns"
 import api from "@/lib/api"
-import { generateUsers, generateRiders, generateOrders, generateMerchants, generateRiderPayouts, generateSettlements, generatePayouts } from "@/lib/dummy-data"
+import { generateUsers, generateRiders, generateOrders, generateMerchants, generateRiderPayouts, generateSettlements, generatePayouts, generateTaxRecords, generateWalletTransactions } from "@/lib/dummy-data"
 
 // --- Types ---
 
@@ -176,6 +176,11 @@ export type Rider = {
             dl: string
             pan?: string
         }
+        apiFetched?: {
+            dob?: string
+            gender?: string
+            nameMatchScore?: number
+        }
     }
     bankDetails: {
         accountNumber: string
@@ -249,6 +254,31 @@ export type OrderIssue = {
     status: "open" | "resolved" | "investigating"
     reportedAt: Date
     description: string
+}
+
+export type TaxRecord = {
+    id: string
+    entityId: string
+    entityName: string
+    type: 'GST_INPUT' | 'GST_OUTPUT' | 'TDS_PAYABLE' | 'TCS_COLLECTED'
+    amount: number
+    taxableAmount: number
+    rate: number // Percentage (e.g., 18, 1, 5)
+    period: string // YYYY-MM
+    status: 'pending' | 'filed' | 'paid'
+    date: Date
+}
+
+export type WalletTransaction = {
+    id: string
+    walletId: string // Maps to Merchant/Rider ID
+    amount: number
+    type: 'credit' | 'debit'
+    category: 'payout' | 'commission' | 'tax_deduction' | 'adjustment' | 'order_revenue' | 'bonus' | 'penalty'
+    description: string
+    referenceId?: string // Order ID or Settlement ID
+    date: Date
+    balanceAfter: number
 }
 
 // --- Initial Mock Data ---
@@ -369,6 +399,8 @@ interface MockDataContextType {
     orderIssues: OrderIssue[]
     appSettings: Record<string, AppSettings>
     zones: Zone[]
+    taxRecords: TaxRecord[]
+    walletTransactions: WalletTransaction[]
     isLoading: boolean
 
     // Actions
@@ -401,8 +433,10 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     const [orderIssues, setOrderIssues] = React.useState<OrderIssue[]>(INITIAL_ISSUES)
     const [appSettings, setAppSettings] = React.useState<Record<string, AppSettings>>(INITIAL_APP_SETTINGS)
     const [zones, setZones] = React.useState<Zone[]>(INITIAL_ZONES)
+    const [taxRecords, setTaxRecords] = React.useState<TaxRecord[]>([])
+    const [walletTransactions, setWalletTransactions] = React.useState<WalletTransaction[]>([])
 
-    const DATA_VERSION = '2.4'
+    const DATA_VERSION = '2.5'
     const STORAGE_KEYS = [
         'bazuroo_users',
         'bazuroo_riders',
@@ -413,6 +447,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         'bazuroo_rider_payouts',
         'bazuroo_settlements',
         'bazuroo_payouts',
+        'bazuroo_tax_records',
+        'bazuroo_wallet_transactions',
         'bazuroo_data_version'
     ]
 
@@ -434,6 +470,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                     localStorage.removeItem('bazuroo_rider_payouts')
                     localStorage.removeItem('bazuroo_settlements')
                     localStorage.removeItem('bazuroo_payouts')
+                    localStorage.removeItem('bazuroo_tax_records')
+                    localStorage.removeItem('bazuroo_wallet_transactions')
                 }
 
                 // Try loading from localStorage
@@ -444,6 +482,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                 const localRiderPayouts = localStorage.getItem('bazuroo_rider_payouts')
                 const localSettlements = localStorage.getItem('bazuroo_settlements')
                 const localPayouts = localStorage.getItem('bazuroo_payouts')
+                const localTaxRecords = localStorage.getItem('bazuroo_tax_records')
+                const localWalletTransactions = localStorage.getItem('bazuroo_wallet_transactions')
 
                 let loadedMerchants = INITIAL_MERCHANTS
 
@@ -466,6 +506,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                     if (localRiderPayouts) setRiderPayouts(JSON.parse(localRiderPayouts))
                     if (localSettlements) setSettlements(JSON.parse(localSettlements))
                     if (localPayouts) setPayouts(JSON.parse(localPayouts))
+                    if (localTaxRecords) setTaxRecords(JSON.parse(localTaxRecords))
+                    if (localWalletTransactions) setWalletTransactions(JSON.parse(localWalletTransactions))
                 } else {
                     console.log("Generating fresh Mock Data...")
                     const newUsers = generateUsers(50)
@@ -482,7 +524,14 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                     setOrders(newOrders)
                     setRiderPayouts(newRiderPayouts)
                     setSettlements(newSettlements)
+                    setSettlements(newSettlements)
                     setPayouts(newPayouts)
+
+                    const newTaxRecords = generateTaxRecords(50, loadedMerchants)
+                    setTaxRecords(newTaxRecords)
+
+                    const newWalletTransactions = generateWalletTransactions(100, loadedMerchants, newRiders)
+                    setWalletTransactions(newWalletTransactions)
                 }
             } catch (e) {
                 console.error("Error loading mock data", e)
@@ -504,6 +553,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('bazuroo_rider_payouts', JSON.stringify(riderPayouts))
             localStorage.setItem('bazuroo_settlements', JSON.stringify(settlements))
             localStorage.setItem('bazuroo_payouts', JSON.stringify(payouts))
+            localStorage.setItem('bazuroo_tax_records', JSON.stringify(taxRecords))
+            localStorage.setItem('bazuroo_wallet_transactions', JSON.stringify(walletTransactions))
             localStorage.setItem('bazuroo_data_version', DATA_VERSION)
         }
     }, [users, riders, orders, merchants, riderPayouts, isLoading])
@@ -599,6 +650,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
             orderIssues,
             appSettings,
             zones,
+            taxRecords,
+            walletTransactions,
             isLoading,
             updateMerchantStatus,
             updateRiderStatus,

@@ -120,17 +120,27 @@
         ]
     },
     "finance": {
-        "title": "Financial Overview",
+        "title": "Finance & Settlements",
         "items": [
             {
-                "title": "Revenue",
+                "title": "Dashboard",
                 "href": "/finance",
+                "icon": "BarChart3"
+            },
+            {
+                "title": "Settlements",
+                "href": "/finance/settlements",
+                "icon": "Calculator"
+            },
+            {
+                "title": "Wallets & Ledgers",
+                "href": "/finance/wallets",
                 "icon": "Wallet"
             },
             {
-                "title": "Payouts",
-                "href": "/finance/payouts",
-                "icon": "FileText"
+                "title": "Tax & Compliance",
+                "href": "/finance/taxes",
+                "icon": "Landmark"
             }
         ]
     },

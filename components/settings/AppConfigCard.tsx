@@ -69,7 +69,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
     return (
         <div className="space-y-6">
             {/* Danger Zone: Maintenance */}
-            <Card className={cn("transition-all duration-300 border-l-4", data.maintenance.active ? "border-l-[#FBC02D] border-y-[#FBC02D]/20 border-r-[#FBC02D]/20 bg-yellow-50/30 shadow-sm" : "border-l-slate-200")}>
+            <Card className={cn("transition-all duration-300 border-l-4 rounded-2xl shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/50 shadow-[inset_0_0_20px_rgba(0,0,0,0.02)]", data.maintenance.active ? "border-l-[#FBC02D] border-y-[#FBC02D]/20 border-r-[#FBC02D]/20 bg-yellow-50/30" : "border-l-slate-200 border-slate-100")}>
                 <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
@@ -95,7 +95,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
                                 <Input
                                     value={data.maintenance.title}
                                     onChange={(e) => handleUpdate('maintenance', 'title', e.target.value)}
-                                    className="bg-white"
+                                    className="bg-white border-yellow-200/60 focus-visible:ring-yellow-400/50 text-slate-900 shadow-sm"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -103,7 +103,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
                                 <Input
                                     value={data.maintenance.banner_message}
                                     onChange={(e) => handleUpdate('maintenance', 'banner_message', e.target.value)}
-                                    className="bg-white border-[#FBC02D]/30 focus-visible:ring-[#FBC02D]"
+                                    className="bg-white border-yellow-300/50 focus-visible:ring-yellow-500/50 shadow-sm font-medium"
                                 />
                             </div>
                         </div>
@@ -112,7 +112,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
                             <Input
                                 value={data.maintenance.message}
                                 onChange={(e) => handleUpdate('maintenance', 'message', e.target.value)}
-                                className="bg-white"
+                                className="bg-white border-yellow-200/60 focus-visible:ring-yellow-400/50 text-slate-900 shadow-sm"
                             />
                         </div>
                     </CardContent>
@@ -120,7 +120,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
             </Card>
 
             {/* Main Configuration Card */}
-            <Card>
+            <Card className="shadow-lg shadow-slate-200/50 border-slate-100 rounded-2xl hover:shadow-xl hover:shadow-slate-300/50 transition-all duration-300 shadow-[inset_0_0_20px_rgba(0,0,0,0.02)]">
                 <CardHeader>
                     <div className="flex items-center gap-2">
                         <Smartphone className="h-5 w-5 text-slate-500" />
@@ -140,7 +140,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* Android Column */}
-                            <div className="space-y-4 p-4 rounded-lg bg-slate-50 border border-slate-100">
+                            <div className="space-y-4 p-4 rounded-xl bg-white border border-slate-100 shadow-sm">
                                 <div className="font-medium text-slate-700 mb-2 flex items-center gap-2">
                                     <span className="h-2 w-2 rounded-full bg-green-500"></span> Android
                                 </div>
@@ -156,7 +156,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
                                         <Input
                                             value={data.version.android.minimum_required}
                                             onChange={(e) => handleVersionUpdate('android', 'minimum_required', e.target.value)}
-                                            className="font-mono bg-white"
+                                            className="font-mono bg-slate-50 border-slate-200 focus-visible:ring-offset-0 focus-visible:ring-slate-900/10"
                                         />
                                     </div>
                                 </div>
@@ -177,7 +177,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
                             </div>
 
                             {/* iOS Column */}
-                            <div className="space-y-4 p-4 rounded-lg bg-slate-50 border border-slate-100">
+                            <div className="space-y-4 p-4 rounded-xl bg-white border border-slate-100 shadow-sm">
                                 <div className="font-medium text-slate-700 mb-2 flex items-center gap-2">
                                     <span className="h-2 w-2 rounded-full bg-slate-400"></span> iOS
                                 </div>
@@ -193,7 +193,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
                                         <Input
                                             value={data.version.ios.minimum_required}
                                             onChange={(e) => handleVersionUpdate('ios', 'minimum_required', e.target.value)}
-                                            className="font-mono bg-white"
+                                            className="font-mono bg-slate-50 border-slate-200 focus-visible:ring-offset-0 focus-visible:ring-slate-900/10"
                                         />
                                     </div>
                                 </div>
@@ -232,6 +232,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
                                     value={data.support.contact}
                                     onChange={(e) => handleUpdate('support', 'contact', e.target.value)}
                                     placeholder="+91..."
+                                    className="bg-slate-50 border-slate-200 focus-visible:ring-offset-0 focus-visible:ring-slate-900/10"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -240,6 +241,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
                                     value={data.support.email}
                                     onChange={(e) => handleUpdate('support', 'email', e.target.value)}
                                     placeholder="support@bazuroo.com"
+                                    className="bg-slate-50 border-slate-200 focus-visible:ring-offset-0 focus-visible:ring-slate-900/10"
                                 />
                             </div>
                             <div className="space-y-2 md:col-span-2">
@@ -249,6 +251,7 @@ export function AppConfigCard({ appKey, data }: AppConfigCardProps) {
                                         value={data.support.whatsapp}
                                         onChange={(e) => handleUpdate('support', 'whatsapp', e.target.value)}
                                         placeholder="https://wa.me/..."
+                                        className="bg-slate-50 border-slate-200 focus-visible:ring-offset-0 focus-visible:ring-slate-900/10"
                                     />
                                     <Button
                                         className="bg-[#278F27] hover:bg-[#278F27]/90 text-white shrink-0"

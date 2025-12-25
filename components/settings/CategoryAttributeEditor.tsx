@@ -111,7 +111,7 @@ export function CategoryAttributeEditor() {
     }
 
     return (
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-100 shadow-lg shadow-slate-200/50 rounded-2xl hover:shadow-xl hover:shadow-slate-300/50 transition-all duration-300 shadow-[inset_0_0_20px_rgba(0,0,0,0.02)]">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
@@ -122,7 +122,7 @@ export function CategoryAttributeEditor() {
                     {/* Category Selector */}
                     <div className="w-[200px]">
                         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-slate-50 border-slate-200 focus:ring-offset-0 focus:ring-slate-900/10 font-medium">
                                 <SelectValue placeholder="Select Category" />
                             </SelectTrigger>
                             <SelectContent>
@@ -146,7 +146,7 @@ export function CategoryAttributeEditor() {
                                 <Input
                                     type="number"
                                     {...register("maxVariants", { valueAsNumber: true })}
-                                    className={`${errors.maxVariants ? "border-red-500" : ""} ${isChanged("maxVariants") ? "border-[#FBC02D] ring-1 ring-[#FBC02D]/20" : ""}`}
+                                    className={`bg-slate-50 border-slate-200 focus-visible:ring-offset-0 focus-visible:ring-slate-900/10 ${errors.maxVariants ? "border-red-500" : ""} ${isChanged("maxVariants") ? "border-[#FBC02D] ring-1 ring-[#FBC02D]/20" : ""}`}
                                 />
                                 {errors.maxVariants && <p className="text-xs text-red-500">{errors.maxVariants.message}</p>}
                             </div>
@@ -155,7 +155,7 @@ export function CategoryAttributeEditor() {
                                 <Input
                                     type="number"
                                     {...register("maxImages", { valueAsNumber: true })}
-                                    className={`${errors.maxImages ? "border-red-500" : ""} ${isChanged("maxImages") ? "border-[#FBC02D] ring-1 ring-[#FBC02D]/20" : ""}`}
+                                    className={`bg-slate-50 border-slate-200 focus-visible:ring-offset-0 focus-visible:ring-slate-900/10 ${errors.maxImages ? "border-red-500" : ""} ${isChanged("maxImages") ? "border-[#FBC02D] ring-1 ring-[#FBC02D]/20" : ""}`}
                                 />
                                 {errors.maxImages && <p className="text-xs text-red-500">{errors.maxImages.message}</p>}
                             </div>
@@ -167,7 +167,7 @@ export function CategoryAttributeEditor() {
                                 <Input
                                     type="number"
                                     {...register("minOrderQty", { valueAsNumber: true })}
-                                    className={`${errors.minOrderQty ? "border-red-500" : ""} ${isChanged("minOrderQty") ? "border-[#FBC02D] ring-1 ring-[#FBC02D]/20" : ""}`}
+                                    className={`bg-slate-50 border-slate-200 focus-visible:ring-offset-0 focus-visible:ring-slate-900/10 ${errors.minOrderQty ? "border-red-500" : ""} ${isChanged("minOrderQty") ? "border-[#FBC02D] ring-1 ring-[#FBC02D]/20" : ""}`}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -175,7 +175,7 @@ export function CategoryAttributeEditor() {
                                 <Input
                                     type="number"
                                     {...register("maxOrderQty", { valueAsNumber: true })}
-                                    className={`${errors.maxOrderQty ? "border-red-500" : ""} ${isChanged("maxOrderQty") ? "border-[#FBC02D] ring-1 ring-[#FBC02D]/20" : ""}`}
+                                    className={`bg-slate-50 border-slate-200 focus-visible:ring-offset-0 focus-visible:ring-slate-900/10 ${errors.maxOrderQty ? "border-red-500" : ""} ${isChanged("maxOrderQty") ? "border-[#FBC02D] ring-1 ring-[#FBC02D]/20" : ""}`}
                                 />
                             </div>
                         </div>
@@ -191,7 +191,7 @@ export function CategoryAttributeEditor() {
                             <Info className="h-3 w-3" />
                         </h3>
 
-                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 space-y-4">
+                        <div className="bg-white p-4 rounded-xl border border-slate-100 space-y-4 shadow-sm">
 
                             {/* Grocery Specific */}
                             {selectedCategory === 'grocery_food' && (
