@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
     LayoutDashboard,
     Store,
@@ -14,11 +14,12 @@ import {
     FileText,
     CheckCircle2,
     ShieldAlert,
-    History
+    History,
+    FileCheck
 } from "lucide-react"
 
 // --- Types ---
-export type SidebarState = "root" | "stores" | "users" | "riders" | "merchants" | "finance" | "orders"
+export type SidebarState = "root" | "stores" | "users" | "riders" | "merchants" | "finance" | "orders" | "kyc"
 
 type NavItem = {
     title: string
@@ -48,7 +49,8 @@ const IconMap: Record<string, React.ElementType> = {
     FileText,
     CheckCircle2,
     ShieldAlert,
-    History
+    History,
+    FileCheck
 }
 
 // --- Menu Configuration ---
@@ -77,6 +79,7 @@ const NavigationContext = React.createContext<NavigationContextType | undefined>
 
 export function NavigationProvider({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
+    const router = useRouter()
     const [activeContext, setActiveContext] = React.useState<SidebarState>("root")
 
     // Automatic State Sync based on URL
@@ -84,7 +87,7 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
         const firstSegment = pathname.split('/')[1] as SidebarState
 
         // Define which segments trigger a drill-down
-        const VALID_CONTEXTS: SidebarState[] = ["stores", "merchants", "finance", "riders", "orders"]
+        const VALID_CONTEXTS: SidebarState[] = ["stores", "merchants", "finance", "riders", "orders", "kyc"]
 
         if (VALID_CONTEXTS.includes(firstSegment)) {
             setActiveContext(firstSegment)
@@ -95,7 +98,7 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
 
     const navigateToRoot = () => {
         setActiveContext("root")
-        // Note: The Sidebar component handles the actual link/router push or we let the user click
+        router.push("/dashboard")
     }
 
     // Derived State

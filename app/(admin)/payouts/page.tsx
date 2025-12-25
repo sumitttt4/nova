@@ -20,6 +20,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { SettlementHistory } from "@/components/finance/SettlementHistory"
+import { CreateSettlementRun } from "@/components/finance/CreateSettlementRun"
+import { Receipt } from "lucide-react"
 
 const storePayouts = [
     {
@@ -94,6 +97,9 @@ export default function PayoutsPage() {
                     <TabsTrigger value="all">All Payouts</TabsTrigger>
                     <TabsTrigger value="stores">Stores</TabsTrigger>
                     <TabsTrigger value="riders">Riders</TabsTrigger>
+                    <TabsTrigger value="settlements" className="gap-2">
+                        <Receipt className="h-4 w-4" /> Full Settlements
+                    </TabsTrigger>
                 </TabsList>
 
                 <div className="flex items-center gap-2 my-4">
@@ -178,6 +184,17 @@ export default function PayoutsPage() {
                 </TabsContent>
                 <TabsContent value="riders">
                     <div className="p-8 text-center text-muted-foreground">Rider payouts filtered view...</div>
+                </TabsContent>
+
+                <TabsContent value="settlements" className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2">
+                            <SettlementHistory />
+                        </div>
+                        <div>
+                            <CreateSettlementRun />
+                        </div>
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>

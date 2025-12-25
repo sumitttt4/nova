@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { User, Order, Rider, Merchant, OrderIssue } from '@/contexts/MockDataContext';
+import { User, Order, Rider, Merchant, OrderIssue, RiderPayout, Settlement, Payout } from '@/contexts/MockDataContext';
 import { subDays, subHours } from 'date-fns';
 
 export function generateUsers(count: number): User[] {
@@ -22,30 +22,53 @@ export function generateUsers(count: number): User[] {
 }
 
 export function generateRiders(count: number): Rider[] {
-    return Array.from({ length: count }).map((_, i) => ({
-        id: `RIDER-${faker.string.alphanumeric(6).toUpperCase()}`,
-        name: faker.person.fullName(),
-        phone: faker.phone.number(),
-        vehicleType: faker.helpers.arrayElement(['Bike', 'Scooter', 'Electric Bike']),
-        status: faker.helpers.weightedArrayElement([{ weight: 0.7, value: 'active' }, { weight: 0.2, value: 'offline' }, { weight: 0.1, value: 'under_review' }]) as any,
-        submittedAt: faker.date.recent().toISOString(),
-        location: {
-            lat: faker.location.latitude(),
-            lng: faker.location.longitude(),
-            address: faker.location.streetAddress()
-        },
-        ekyc: {} as any, // Simplified
-        logistics: { plateNumber: faker.vehicle.vrm(), tShirtSize: 'L' },
-        onboardingFee: { status: 'paid', amount: 499 },
-        walletBalance: parseFloat(faker.finance.amount({ min: 0, max: 5000, dec: 0 })),
-        metrics: {
-            onlineTime: faker.number.int({ min: 0, max: 600 }),
-            activeTime: faker.number.int({ min: 0, max: 300 }),
-            rating: parseFloat(faker.number.float({ min: 3.5, max: 5.0, fractionDigits: 1 }).toFixed(1)),
-            lastOrderTime: faker.date.recent()
-        },
-        activeOrder: Math.random() > 0.7 ? `ORD-${faker.string.alphanumeric(6).toUpperCase()}` : null
-    }));
+    return Array.from({ length: count }).map((_, i) => {
+        const firstName = faker.person.firstName();
+        const lastName = faker.person.lastName();
+        const fullName = `${firstName} ${lastName}`;
+
+        return {
+            id: `RIDER-${faker.string.alphanumeric(6).toUpperCase()}`,
+            name: fullName,
+            phone: faker.phone.number(),
+            email: faker.internet.email({ firstName, lastName }),
+            vehicleType: faker.helpers.arrayElement(['Bike', 'Scooter', 'Electric Bike']),
+            status: faker.helpers.weightedArrayElement([{ weight: 0.7, value: 'active' }, { weight: 0.2, value: 'offline' }, { weight: 0.1, value: 'under_review' }]) as any,
+            submittedAt: faker.date.recent().toISOString(),
+            deliveryRadius: faker.number.int({ min: 3, max: 20 }),
+            kycStatus: faker.helpers.weightedArrayElement([{ weight: 0.8, value: 'verified' }, { weight: 0.1, value: 'pending' }, { weight: 0.1, value: 'rejected' }]),
+            location: {
+                lat: faker.location.latitude(),
+                lng: faker.location.longitude(),
+                address: faker.location.streetAddress()
+            },
+            ekyc: {
+                documents: {
+                    aadharFront: "https://placehold.co/600x400/png?text=Aadhar+Front",
+                    aadharBack: "https://placehold.co/600x400/png?text=Aadhar+Back",
+                    selfie: `https://i.pravatar.cc/300?u=${faker.number.int()}`,
+                    dl: "https://placehold.co/600x400/png?text=Driving+License",
+                    pan: Math.random() > 0.5 ? "https://placehold.co/600x400/png?text=PAN+Card" : undefined
+                }
+            },
+            bankDetails: {
+                accountNumber: faker.finance.accountNumber(12),
+                ifsc: `HDFC${faker.string.numeric(7)}`,
+                beneficiaryName: fullName,
+                bankName: "HDFC Bank"
+            },
+            logistics: { plateNumber: faker.vehicle.vrm(), tShirtSize: 'L' },
+            onboardingFee: { status: 'paid', amount: 499 },
+            walletBalance: parseFloat(faker.finance.amount({ min: 0, max: 5000, dec: 0 })),
+            metrics: {
+                onlineTime: faker.number.int({ min: 0, max: 600 }),
+                activeTime: faker.number.int({ min: 0, max: 300 }),
+                rating: parseFloat(faker.number.float({ min: 3.5, max: 5.0, fractionDigits: 1 }).toFixed(1)),
+                lastOrderTime: faker.date.recent()
+            },
+            activeOrder: Math.random() > 0.7 ? `ORD-${faker.string.alphanumeric(6).toUpperCase()}` : null
+        } as Rider;
+    });
 }
 
 // ... existing imports
@@ -129,4 +152,88 @@ export function generateOrders(count: number, users: User[], merchants: Merchant
             createdAt: faker.date.recent({ days: 10 }),
         } as Order;
     });
+}
+
+export function generateRiderPayouts(count: number, riders: Rider[]): RiderPayout[] {
+    if (riders.length === 0) return [];
+
+    return Array.from({ length: count }).map(() => {
+        const rider = faker.helpers.arrayElement(riders);
+        return {
+            id: `RP-${faker.string.alphanumeric(8).toUpperCase()}`,
+            riderId: rider.id,
+            riderName: rider.name,
+            amount: parseFloat(faker.finance.amount({ min: 500, max: 5000, dec: 0 })),
+            status: faker.helpers.weightedArrayElement([{ weight: 0.8, value: 'processed' }, { weight: 0.15, value: 'pending' }, { weight: 0.05, value: 'failed' }]),
+            date: faker.date.past(),
+            transactionId: `TXN-${faker.string.numeric(10)}`
+        } as RiderPayout;
+    });
+}
+
+export function generatePayouts(count: number, merchants: Merchant[]): Payout[] {
+    if (!merchants || merchants.length === 0) return [];
+
+    return Array.from({ length: count }).map(() => {
+        const merchant = faker.helpers.arrayElement(merchants);
+        return {
+            id: `PO-${faker.string.alphanumeric(8).toUpperCase()}`,
+            merchantName: merchant.storeName,
+            amount: parseFloat(faker.finance.amount({ min: 1000, max: 20000, dec: 0 })),
+            status: faker.helpers.weightedArrayElement([{ weight: 0.8, value: 'processed' }, { weight: 0.15, value: 'pending' }, { weight: 0.05, value: 'failed' }]),
+            date: faker.date.past(),
+            transactionId: `TXN_HDFC_${faker.string.numeric(8)}`
+        } as Payout;
+    });
+}
+
+export function generateSettlements(count: number, merchants: Merchant[], riders: Rider[]): Settlement[] {
+    if ((!merchants || merchants.length === 0) && (!riders || riders.length === 0)) return [];
+
+    return Array.from({ length: count }).map(() => {
+        const isStore = Math.random() > 0.3; // 70% store settlements
+        let recipient: { id: string, name: string };
+        let type: 'store' | 'rider';
+
+        if (isStore && merchants && merchants.length > 0) {
+            const m = faker.helpers.arrayElement(merchants);
+            recipient = { id: m.id, name: m.storeName };
+            type = 'store';
+        } else if (riders && riders.length > 0) {
+            const r = faker.helpers.arrayElement(riders);
+            recipient = { id: r.id, name: r.name };
+            type = 'rider';
+        } else {
+            // Fallback if one pool is empty but function called
+            return null as unknown as Settlement
+        }
+
+        const gross = parseFloat(faker.finance.amount({ min: 2000, max: 25000, dec: 0 }));
+        const commission = Math.floor(gross * (type === 'store' ? 0.15 : 0.20));
+        const tax = Math.floor(gross * 0.05);
+        const net = gross - commission - tax;
+
+        // Ensure dates are strings for JSON compatibility
+        const start = faker.date.recent({ days: 60 });
+        const end = new Date(start);
+        end.setDate(start.getDate() + 7);
+
+        return {
+            id: `STLM-${faker.string.alphanumeric(8).toUpperCase()}`,
+            recipientId: recipient.id,
+            recipientName: recipient.name,
+            type: type,
+            breakdown: {
+                grossAmount: gross,
+                commission: commission,
+                tax: tax,
+                adjustments: 0
+            },
+            netAmount: net,
+            status: faker.helpers.weightedArrayElement([{ weight: 0.8, value: 'processed' }, { weight: 0.15, value: 'pending' }, { weight: 0.05, value: 'failed' }]),
+            periodStart: start,
+            periodEnd: end,
+            transactionReference: `TXNS-${faker.string.numeric(12)}`
+        } as Settlement;
+    }).filter(Boolean); // Filter out potential nulls
 }

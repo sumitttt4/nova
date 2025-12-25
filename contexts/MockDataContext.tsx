@@ -3,7 +3,7 @@
 import * as React from "react"
 import { format, subDays, subHours } from "date-fns"
 import api from "@/lib/api"
-import { generateUsers, generateRiders, generateOrders, generateMerchants } from "@/lib/dummy-data"
+import { generateUsers, generateRiders, generateOrders, generateMerchants, generateRiderPayouts, generateSettlements, generatePayouts } from "@/lib/dummy-data"
 
 // --- Types ---
 
@@ -156,22 +156,32 @@ export type Rider = {
     id: string
     name: string
     phone: string
+    email: string // Added email for completeness
     vehicleType: string
     status: RiderStatus
-    activeOrder?: string | null // New field for map visualization
+    activeOrder?: string | null
     submittedAt: string
+    deliveryRadius: number // km, max 20
+    kycStatus: "pending" | "verified" | "rejected" | "partial"
     location: {
         lat: number
         lng: number
         address: string
     }
     ekyc: {
-        userSubmitted: any
-        apiFetched: any
         documents: {
             aadharFront: string
+            aadharBack: string
             selfie: string
+            dl: string
+            pan?: string
         }
+    }
+    bankDetails: {
+        accountNumber: string
+        ifsc: string
+        beneficiaryName: string
+        bankName: string
     }
     logistics: {
         plateNumber: string
@@ -186,11 +196,21 @@ export type Rider = {
     walletBalance?: number
     rejectionReasons?: string[]
     metrics?: {
-        onlineTime: number // minutes today
-        activeTime: number // minutes in active deliveries today
-        rating: number // 0-5
-        lastOrderTime?: Date // For churn detection
+        onlineTime: number
+        activeTime: number
+        rating: number
+        lastOrderTime?: Date
     }
+}
+
+export type RiderPayout = {
+    id: string
+    riderId: string
+    riderName: string
+    amount: number
+    status: "processed" | "pending" | "failed"
+    date: Date
+    transactionId: string
 }
 
 export type Payout = {
@@ -200,6 +220,24 @@ export type Payout = {
     status: "processed" | "pending" | "failed" // 'processed' maps to 'Paid', 'pending' to 'Brand Gold'
     date: Date
     transactionId: string
+}
+
+export type Settlement = {
+    id: string
+    recipientId: string
+    recipientName: string
+    type: 'store' | 'rider'
+    periodStart: Date
+    periodEnd: Date
+    breakdown: {
+        grossAmount: number
+        commission: number
+        tax: number
+        adjustments: number
+    }
+    netAmount: number
+    status: 'pending' | 'processed' | 'failed'
+    transactionReference?: string
 }
 
 export type OrderIssue = {
@@ -326,6 +364,8 @@ interface MockDataContextType {
     riders: Rider[]
     users: User[]
     payouts: Payout[]
+    riderPayouts: RiderPayout[]
+    settlements: Settlement[]
     orderIssues: OrderIssue[]
     appSettings: Record<string, AppSettings>
     zones: Zone[]
@@ -334,6 +374,8 @@ interface MockDataContextType {
     // Actions
     updateMerchantStatus: (id: string, status: MerchantStatus, reasons?: string[]) => void
     updateRiderStatus: (id: string, status: RiderStatus, reasons?: string[]) => void
+    updateRiderKyc: (id: string, status: 'verified' | 'rejected' | 'pending') => void
+    updateRiderRadius: (id: string, radius: number) => void
     addNewMerchant: (data: Partial<Merchant>) => void
     approveWithdrawal: (id: string) => void
     rejectWithdrawal: (id: string) => void
@@ -341,6 +383,7 @@ interface MockDataContextType {
     updateOrderStatus: (id: string, status: Order['status']) => void
     updateAppSettings: (key: string, newSettings: AppSettings) => void
     toggleZoneSurge: (id: string, enabled: boolean) => void
+    createSettlement: (data: Partial<Settlement>) => void
 }
 
 const MockDataContext = React.createContext<MockDataContextType | undefined>(undefined)
@@ -353,12 +396,25 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     const [riders, setRiders] = React.useState<Rider[]>([])
     const [users, setUsers] = React.useState<User[]>([])
     const [payouts, setPayouts] = React.useState<Payout[]>(INITIAL_PAYOUTS)
+    const [riderPayouts, setRiderPayouts] = React.useState<RiderPayout[]>([])
+    const [settlements, setSettlements] = React.useState<Settlement[]>([])
     const [orderIssues, setOrderIssues] = React.useState<OrderIssue[]>(INITIAL_ISSUES)
     const [appSettings, setAppSettings] = React.useState<Record<string, AppSettings>>(INITIAL_APP_SETTINGS)
     const [zones, setZones] = React.useState<Zone[]>(INITIAL_ZONES)
 
-    // Data Versioning
-    const DATA_VERSION = '2.1'
+    const DATA_VERSION = '2.4'
+    const STORAGE_KEYS = [
+        'bazuroo_users',
+        'bazuroo_riders',
+        'bazuroo_orders',
+        'bazuroo_merchants',
+        'bazuroo_zones',
+        'bazuroo_app_settings',
+        'bazuroo_rider_payouts',
+        'bazuroo_settlements',
+        'bazuroo_payouts',
+        'bazuroo_data_version'
+    ]
 
     // Load Data Effect
     React.useEffect(() => {
@@ -375,6 +431,9 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                     localStorage.removeItem('bazuroo_riders')
                     localStorage.removeItem('bazuroo_orders')
                     localStorage.removeItem('bazuroo_merchants')
+                    localStorage.removeItem('bazuroo_rider_payouts')
+                    localStorage.removeItem('bazuroo_settlements')
+                    localStorage.removeItem('bazuroo_payouts')
                 }
 
                 // Try loading from localStorage
@@ -382,6 +441,9 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                 const localRiders = localStorage.getItem('bazuroo_riders')
                 const localOrders = localStorage.getItem('bazuroo_orders')
                 const localMerchants = localStorage.getItem('bazuroo_merchants')
+                const localRiderPayouts = localStorage.getItem('bazuroo_rider_payouts')
+                const localSettlements = localStorage.getItem('bazuroo_settlements')
+                const localPayouts = localStorage.getItem('bazuroo_payouts')
 
                 let loadedMerchants = INITIAL_MERCHANTS
 
@@ -400,6 +462,10 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                     setUsers(JSON.parse(localUsers))
                     setRiders(JSON.parse(localRiders))
                     setOrders(JSON.parse(localOrders))
+                    setOrders(JSON.parse(localOrders))
+                    if (localRiderPayouts) setRiderPayouts(JSON.parse(localRiderPayouts))
+                    if (localSettlements) setSettlements(JSON.parse(localSettlements))
+                    if (localPayouts) setPayouts(JSON.parse(localPayouts))
                 } else {
                     console.log("Generating fresh Mock Data...")
                     const newUsers = generateUsers(50)
@@ -407,10 +473,16 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 
                     // Use loadedMerchants (which is either from LS or newly generated) for orders
                     const newOrders = generateOrders(100, newUsers, loadedMerchants)
+                    const newRiderPayouts = generateRiderPayouts(50, newRiders)
+                    const newSettlements = generateSettlements(20, loadedMerchants, newRiders)
+                    const newPayouts = generatePayouts(50, loadedMerchants)
 
                     setUsers(newUsers)
                     setRiders(newRiders)
                     setOrders(newOrders)
+                    setRiderPayouts(newRiderPayouts)
+                    setSettlements(newSettlements)
+                    setPayouts(newPayouts)
                 }
             } catch (e) {
                 console.error("Error loading mock data", e)
@@ -429,9 +501,12 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('bazuroo_riders', JSON.stringify(riders))
             localStorage.setItem('bazuroo_orders', JSON.stringify(orders))
             localStorage.setItem('bazuroo_merchants', JSON.stringify(merchants))
+            localStorage.setItem('bazuroo_rider_payouts', JSON.stringify(riderPayouts))
+            localStorage.setItem('bazuroo_settlements', JSON.stringify(settlements))
+            localStorage.setItem('bazuroo_payouts', JSON.stringify(payouts))
             localStorage.setItem('bazuroo_data_version', DATA_VERSION)
         }
-    }, [users, riders, orders, merchants, isLoading])
+    }, [users, riders, orders, merchants, riderPayouts, isLoading])
 
 
     const updateMerchantStatus = (id: string, status: MerchantStatus, reasons: string[] = []) => {
@@ -440,6 +515,14 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 
     const updateRiderStatus = (id: string, status: RiderStatus, reasons: string[] = []) => {
         setRiders(prev => prev.map(r => r.id === id ? { ...r, status, rejectionReasons: reasons } : r))
+    }
+
+    const updateRiderKyc = (id: string, status: 'verified' | 'rejected' | 'pending') => {
+        setRiders(prev => prev.map(r => r.id === id ? { ...r, kycStatus: status } : r))
+    }
+
+    const updateRiderRadius = (id: string, radius: number) => {
+        setRiders(prev => prev.map(r => r.id === id ? { ...r, deliveryRadius: radius } : r))
     }
 
     const addNewMerchant = (data: Partial<Merchant>) => {
@@ -487,6 +570,22 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         setZones(prev => prev.map(z => z.id === id ? { ...z, surgeEnabled: enabled } : z))
     }
 
+    const createSettlement = (data: Partial<Settlement>) => {
+        const newSettlement: Settlement = {
+            id: `SET-${Date.now()}`,
+            recipientId: 'UNKNOWN',
+            recipientName: 'Unknown',
+            type: 'store',
+            periodStart: new Date(),
+            periodEnd: new Date(),
+            breakdown: { grossAmount: 0, commission: 0, tax: 0, adjustments: 0 },
+            netAmount: 0,
+            status: 'pending',
+            ...data
+        } as Settlement
+        setSettlements(prev => [newSettlement, ...prev])
+    }
+
     return (
         <MockDataContext.Provider value={{
             merchants,
@@ -495,19 +594,24 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
             riders,
             users,
             payouts,
+            riderPayouts,
+            settlements,
             orderIssues,
             appSettings,
             zones,
             isLoading,
             updateMerchantStatus,
             updateRiderStatus,
+            updateRiderKyc,
+            updateRiderRadius,
             addNewMerchant,
             approveWithdrawal,
             rejectWithdrawal,
             addOrder,
             updateOrderStatus,
             updateAppSettings,
-            toggleZoneSurge
+            toggleZoneSurge,
+            createSettlement
         }}>
             {children}
         </MockDataContext.Provider>

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useMockData } from "@/contexts/MockDataContext"
 import { Button } from "@/components/ui/button"
 import {
@@ -28,6 +29,7 @@ import { Search, MoreHorizontal, Filter, Bike, Phone, MapPin, Activity, Zap, Clo
 
 export default function RidersPage() {
     const { riders } = useMockData()
+    const router = useRouter()
     const [filter, setFilter] = React.useState("all")
     const [searchQuery, setSearchQuery] = React.useState("")
 
@@ -163,7 +165,11 @@ export default function RidersPage() {
                             </TableRow>
                         ) : (
                             filteredRiders.map((rider) => (
-                                <TableRow key={rider.id} className="hover:bg-slate-50 transition-colors">
+                                <TableRow
+                                    key={rider.id}
+                                    className="hover:bg-slate-50 transition-colors cursor-pointer"
+                                    onClick={() => router.push(`/riders/${rider.id}`)}
+                                >
                                     <TableCell>
                                         <Avatar className="h-9 w-9 rounded-full border border-slate-100">
                                             <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${rider.name}`} alt={rider.name} />
@@ -219,8 +225,10 @@ export default function RidersPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem>View Profile</DropdownMenuItem>
-                                                <DropdownMenuItem>Assign Order</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/riders/${rider.id}`) }}>
+                                                    View Profile
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={(e) => e.stopPropagation()}>Assign Order</DropdownMenuItem>
                                                 <DropdownMenuItem className="text-red-600">Suspend</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

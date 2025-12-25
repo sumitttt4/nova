@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useMockData } from "@/contexts/MockDataContext"
+import { Button } from "@/components/ui/button"
 import {
     Table,
     TableBody,
@@ -11,57 +12,202 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Search, MoreHorizontal, Filter, Receipt } from "lucide-react"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { SettlementHistory } from "@/components/finance/SettlementHistory"
+import { CreateSettlementRun } from "@/components/finance/CreateSettlementRun"
 import { format } from "date-fns"
 
 export default function PayoutsPage() {
-    const { payouts } = useMockData()
+    const { payouts, riderPayouts } = useMockData()
+    const [isMounted, setIsMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
+    // Combine payouts for "All" view with unified schema
+    const allPayouts = React.useMemo(() => {
+        const storeItems = payouts.map(p => ({
+            ...p,
+            recipient: p.merchantName,
+            type: 'Store',
+            account: '**** ' + p.transactionId.slice(-4) // Mock account
+        }))
+        const riderItems = riderPayouts.map(p => ({
+            ...p,
+            recipient: p.riderName,
+            type: 'Rider',
+            account: '**** ' + p.transactionId.slice(-4)
+        }))
+        // Sort by date desc
+        return [...storeItems, ...riderItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    }, [payouts, riderPayouts])
+
+    if (!isMounted) {
+        return <div className="p-8 flex justify-center"><span className="loading loading-spinner"></span></div>
+    }
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900">Payouts</h1>
-                <p className="text-slate-500">Track settlements and payments to merchant partners.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="space-y-1 text-center sm:text-left">
+                    <h1 className="text-2xl font-bold tracking-tight">Payouts & Settlements</h1>
+                    <p className="text-muted-foreground">
+                        Manage outgoing payments to partners and riders.
+                    </p>
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Button className="gap-2 bg-[#2BD67C] text-black font-bold hover:bg-[#2BD67C]/90">
+                        Process Payouts
+                    </Button>
+                </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <Table>
-                    <TableHeader className="bg-slate-50/50">
-                        <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Merchant</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Transaction ID</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {payouts.map((payout) => (
-                            <TableRow key={payout.id} className="hover:bg-slate-50/50">
-                                <TableCell className="font-mono text-xs font-medium text-slate-500">{payout.id}</TableCell>
-                                <TableCell className="font-medium text-slate-900">{payout.merchantName}</TableCell>
-                                <TableCell>₹{payout.amount.toLocaleString()}</TableCell>
-                                <TableCell>
-                                    <Badge
-                                        variant="outline"
-                                        className={`
-                                            ${payout.status === 'processed' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                payout.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                                    'bg-red-50 text-red-700 border-red-200'}
-                                        `}
-                                    >
-                                        {payout.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-slate-500 text-sm">
-                                    {format(new Date(payout.date), "MMM dd, yyyy")}
-                                </TableCell>
-                                <TableCell className="font-mono text-xs text-slate-500">{payout.transactionId}</TableCell>
+            <Tabs defaultValue="all" className="space-y-4">
+                <TabsList>
+                    <TabsTrigger value="all">All Payouts</TabsTrigger>
+                    <TabsTrigger value="stores">Stores</TabsTrigger>
+                    <TabsTrigger value="riders">Riders</TabsTrigger>
+                    <TabsTrigger value="settlements" className="gap-2">
+                        <Receipt className="h-4 w-4" /> Full Settlements
+                    </TabsTrigger>
+                </TabsList>
+
+                <div className="flex items-center gap-2 my-4">
+                    <div className="relative flex-1 max-w-sm">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="search"
+                            placeholder="Search payout ID or recipient..."
+                            className="pl-9"
+                        />
+                    </div>
+                    <Button variant="outline" size="icon">
+                        <Filter className="h-4 w-4" />
+                    </Button>
+                </div>
+
+                <TabsContent value="all" className="rounded-md border bg-card text-card-foreground shadow-sm p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Payout ID</TableHead>
+                                <TableHead>Recipient</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Account</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                                <TableHead className="text-right"></TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
+                        </TableHeader>
+                        <TableBody>
+                            {allPayouts.map((payout) => (
+                                <TableRow key={payout.id}>
+                                    <TableCell className="font-mono text-xs">{payout.id}</TableCell>
+                                    <TableCell className="font-medium">{payout.recipient}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary" className="font-normal">
+                                            {payout.type}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-xs">{payout.account}</TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant="outline"
+                                            className={
+                                                payout.status === "processed"
+                                                    ? "bg-green-100 text-green-700 border-green-200"
+                                                    : payout.status === "pending"
+                                                        ? "bg-blue-100 text-blue-700 border-blue-200"
+                                                        : "bg-red-100 text-red-700 border-red-200"
+                                            }
+                                        >
+                                            {payout.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-sm">
+                                        {format(new Date(payout.date), 'dd MMM yyyy')}
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium">
+                                        ₹{payout.amount.toLocaleString()}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                    <span className="sr-only">Open menu</span>
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                <DropdownMenuItem>View Breakdown</DropdownMenuItem>
+                                                <DropdownMenuItem>Download Invoice</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TabsContent>
+
+                <TabsContent value="stores">
+                    {/* Filtered View for Stores - similar structure */}
+                    <div className="rounded-md border bg-card text-card-foreground shadow-sm p-0">
+                        <Table>
+                            <TableHeader><TableRow><TableHead>Payout ID</TableHead><TableHead>Store Name</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {allPayouts.filter(p => p.type === 'Store').map(p => (
+                                    <TableRow key={p.id}>
+                                        <TableCell className="font-mono text-xs">{p.id}</TableCell>
+                                        <TableCell>{p.recipient}</TableCell>
+                                        <TableCell className="text-right">₹{p.amount.toLocaleString()}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="riders">
+                    <div className="rounded-md border bg-card text-card-foreground shadow-sm p-0">
+                        <Table>
+                            <TableHeader><TableRow><TableHead>Payout ID</TableHead><TableHead>Rider Name</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {allPayouts.filter(p => p.type === 'Rider').map(p => (
+                                    <TableRow key={p.id}>
+                                        <TableCell className="font-mono text-xs">{p.id}</TableCell>
+                                        <TableCell>{p.recipient}</TableCell>
+                                        <TableCell className="text-right">₹{p.amount.toLocaleString()}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="settlements" className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2">
+                            <SettlementHistory />
+                        </div>
+                        <div>
+                            <CreateSettlementRun />
+                        </div>
+                    </div>
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }

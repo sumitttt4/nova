@@ -41,6 +41,11 @@
                 "title": "Settings",
                 "href": "/settings",
                 "icon": "Settings"
+            },
+            {
+                "title": "KYC Requests",
+                "href": "/kyc",
+                "icon": "FileCheck"
             }
         ]
     },
@@ -126,6 +131,21 @@
                 "title": "Payouts",
                 "href": "/finance/payouts",
                 "icon": "FileText"
+            }
+        ]
+    },
+    "kyc": {
+        "title": "KYC & Compliance",
+        "items": [
+            {
+                "title": "Pending Requests",
+                "href": "/kyc",
+                "icon": "FileCheck"
+            },
+            {
+                "title": "History",
+                "href": "/kyc/history",
+                "icon": "History"
             }
         ]
     }

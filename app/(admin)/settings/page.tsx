@@ -6,7 +6,8 @@ import { AppSettings } from "@/contexts/MockDataContext"
 import { AppConfigCard } from "@/components/settings/AppConfigCard"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Save, Smartphone, Store, Bike } from "lucide-react"
+import { CategoryAttributeEditor } from "@/components/settings/CategoryAttributeEditor"
+import { Save, Smartphone, Store, Bike, Sparkles } from "lucide-react"
 
 export default function SettingsPage() {
     const { appSettings } = useMockData()
@@ -31,7 +32,7 @@ export default function SettingsPage() {
             </div>
 
             <Tabs defaultValue="user_app" className="w-full space-y-6">
-                <TabsList className="grid w-full max-w-md grid-cols-3 h-10">
+                <TabsList className="grid w-full max-w-2xl grid-cols-4 h-10">
                     <TabsTrigger value="user_app" className="flex items-center gap-2">
                         <Smartphone className="h-4 w-4" />
                         User App
@@ -43,6 +44,10 @@ export default function SettingsPage() {
                     <TabsTrigger value="rider_app" className="flex items-center gap-2">
                         <Bike className="h-4 w-4" />
                         Rider
+                    </TabsTrigger>
+                    <TabsTrigger value="categories" className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4" />
+                        Store Logic
                     </TabsTrigger>
                 </TabsList>
 
@@ -86,6 +91,17 @@ export default function SettingsPage() {
                         </span>
                     </div>
                     {appSettings.rider_app && <AppConfigCard appKey="rider_app" data={appSettings.rider_app} />}
+                </TabsContent>
+
+                {/* Category Logic Editor */}
+                <TabsContent value="categories" className="space-y-4 focus-visible:outline-none">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <h2 className="text-lg font-semibold tracking-tight">Store Category Logic</h2>
+                            <p className="text-sm text-slate-500">Configure business rules, compliance, and limits for store categories.</p>
+                        </div>
+                    </div>
+                    <CategoryAttributeEditor />
                 </TabsContent>
             </Tabs>
         </div>
