@@ -3,7 +3,7 @@
 import * as React from "react"
 import { format, subDays, subHours } from "date-fns"
 import api from "@/lib/api"
-import { generateUsers, generateRiders, generateOrders, generateMerchants, generateRiderPayouts, generateSettlements, generatePayouts, generateTaxRecords, generateWalletTransactions } from "@/lib/dummy-data"
+import { generateUsers, generateRiders, generateOrders, generateMerchants, generateRiderPayouts, generateSettlements, generatePayouts, generateTaxRecords, generateWalletTransactions, generateFeedbacks, generateProducts, generateStoreFeedbacks, generateRiderReviews, generateRiderFeedbacks } from "@/lib/dummy-data"
 
 // --- Types ---
 
@@ -281,6 +281,66 @@ export type WalletTransaction = {
     balanceAfter: number
 }
 
+export type Feedback = {
+    id: string
+    userId: string
+    userName: string
+    userEmail: string
+    rating: number // 1-5
+    comment: string
+    sentiment: 'positive' | 'negative' | 'neutral'
+    isSeen: boolean
+    createdAt: Date
+}
+
+export type Product = {
+    id: string
+    merchantId: string
+    storeName: string
+    name: string
+    category: string
+    price: number
+    image: string
+    status: 'pending' | 'approved' | 'rejected'
+    rejectionReason?: string
+    createdAt: Date
+}
+
+export type StoreFeedback = {
+    id: string
+    merchantId: string
+    storeName: string
+    email: string
+    rating: number // 1-5
+    comment: string
+    sentiment: 'positive' | 'negative' | 'neutral'
+    isSeen: boolean
+    createdAt: Date
+}
+
+export type RiderReview = {
+    id: string
+    riderId: string
+    riderName: string
+    userId: string
+    userName: string
+    orderId: string
+    rating: number
+    comment: string
+    createdAt: Date
+}
+
+export type RiderFeedback = {
+    id: string
+    riderId: string
+    riderName: string
+    category: 'app_issue' | 'payment' | 'support' | 'suggestion' | 'other'
+    sentiment: 'positive' | 'negative' | 'neutral'
+    comment: string
+    isSeen: boolean
+    createdAt: Date
+}
+
 // --- Initial Mock Data ---
 
 const MOCK_NOW = new Date("2023-11-20T10:00:00Z")
@@ -401,6 +461,12 @@ interface MockDataContextType {
     zones: Zone[]
     taxRecords: TaxRecord[]
     walletTransactions: WalletTransaction[]
+    feedbacks: Feedback[]
+    products: Product[]
+    products: Product[]
+    storeFeedbacks: StoreFeedback[]
+    riderReviews: RiderReview[]
+    riderFeedbacks: RiderFeedback[]
     isLoading: boolean
 
     // Actions
@@ -416,6 +482,11 @@ interface MockDataContextType {
     updateAppSettings: (key: string, newSettings: AppSettings) => void
     toggleZoneSurge: (id: string, enabled: boolean) => void
     createSettlement: (data: Partial<Settlement>) => void
+    markFeedbackSeen: (id: string, seen: boolean) => void
+    approveProduct: (id: string) => void
+    rejectProduct: (id: string, reason: string) => void
+    markStoreFeedbackSeen: (id: string, seen: boolean) => void
+    markRiderFeedbackSeen: (id: string, seen: boolean) => void
 }
 
 const MockDataContext = React.createContext<MockDataContextType | undefined>(undefined)
@@ -435,8 +506,13 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     const [zones, setZones] = React.useState<Zone[]>(INITIAL_ZONES)
     const [taxRecords, setTaxRecords] = React.useState<TaxRecord[]>([])
     const [walletTransactions, setWalletTransactions] = React.useState<WalletTransaction[]>([])
+    const [feedbacks, setFeedbacks] = React.useState<Feedback[]>([])
+    const [products, setProducts] = React.useState<Product[]>([])
+    const [storeFeedbacks, setStoreFeedbacks] = React.useState<StoreFeedback[]>([])
+    const [riderReviews, setRiderReviews] = React.useState<RiderReview[]>([])
+    const [riderFeedbacks, setRiderFeedbacks] = React.useState<RiderFeedback[]>([])
 
-    const DATA_VERSION = '2.5'
+    const DATA_VERSION = '2.8'
     const STORAGE_KEYS = [
         'bazuroo_users',
         'bazuroo_riders',
@@ -449,6 +525,11 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         'bazuroo_payouts',
         'bazuroo_tax_records',
         'bazuroo_wallet_transactions',
+        'bazuroo_feedbacks',
+        'bazuroo_products',
+        'bazuroo_store_feedbacks',
+        'bazuroo_rider_reviews',
+        'bazuroo_rider_feedbacks',
         'bazuroo_data_version'
     ]
 
@@ -484,6 +565,11 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                 const localPayouts = localStorage.getItem('bazuroo_payouts')
                 const localTaxRecords = localStorage.getItem('bazuroo_tax_records')
                 const localWalletTransactions = localStorage.getItem('bazuroo_wallet_transactions')
+                const localFeedbacks = localStorage.getItem('bazuroo_feedbacks')
+                const localProducts = localStorage.getItem('bazuroo_products')
+                const localStoreFeedbacks = localStorage.getItem('bazuroo_store_feedbacks')
+                const localRiderReviews = localStorage.getItem('bazuroo_rider_reviews')
+                const localRiderFeedbacks = localStorage.getItem('bazuroo_rider_feedbacks')
 
                 let loadedMerchants = INITIAL_MERCHANTS
 
@@ -502,12 +588,31 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                     setUsers(JSON.parse(localUsers))
                     setRiders(JSON.parse(localRiders))
                     setOrders(JSON.parse(localOrders))
-                    setOrders(JSON.parse(localOrders))
                     if (localRiderPayouts) setRiderPayouts(JSON.parse(localRiderPayouts))
                     if (localSettlements) setSettlements(JSON.parse(localSettlements))
                     if (localPayouts) setPayouts(JSON.parse(localPayouts))
                     if (localTaxRecords) setTaxRecords(JSON.parse(localTaxRecords))
                     if (localWalletTransactions) setWalletTransactions(JSON.parse(localWalletTransactions))
+
+                    if (localFeedbacks) {
+                        setFeedbacks(JSON.parse(localFeedbacks))
+                    } else {
+                        // If no feedbacks but users exist, generate them
+                        const users = JSON.parse(localUsers)
+                        setFeedbacks(generateFeedbacks(30, users))
+                    }
+
+                    if (localProducts) setProducts(JSON.parse(localProducts))
+                    else setProducts(generateProducts(50, loadedMerchants))
+
+                    if (localStoreFeedbacks) setStoreFeedbacks(JSON.parse(localStoreFeedbacks))
+                    else setStoreFeedbacks(generateStoreFeedbacks(20, loadedMerchants))
+
+                    if (localRiderReviews) setRiderReviews(JSON.parse(localRiderReviews))
+                    else setRiderReviews(generateRiderReviews(30, JSON.parse(localRiders), JSON.parse(localUsers)))
+
+                    if (localRiderFeedbacks) setRiderFeedbacks(JSON.parse(localRiderFeedbacks))
+                    else setRiderFeedbacks(generateRiderFeedbacks(20, JSON.parse(localRiders)))
                 } else {
                     console.log("Generating fresh Mock Data...")
                     const newUsers = generateUsers(50)
@@ -532,6 +637,39 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 
                     const newWalletTransactions = generateWalletTransactions(100, loadedMerchants, newRiders)
                     setWalletTransactions(newWalletTransactions)
+
+                    const newFeedbacks = generateFeedbacks(30, newUsers)
+                    setFeedbacks(newFeedbacks)
+
+                    const newProducts = generateProducts(50, loadedMerchants)
+                    setProducts(newProducts)
+
+                    const newStoreFeedbacks = generateStoreFeedbacks(20, loadedMerchants)
+                    setStoreFeedbacks(newStoreFeedbacks)
+
+                    const newRiderReviews = generateRiderReviews(30, newRiders, newUsers)
+                    const newRiderFeedbacks = generateRiderFeedbacks(20, newRiders)
+
+                    setRiderReviews(newRiderReviews)
+                    setRiderFeedbacks(newRiderFeedbacks)
+
+                    // Persist
+                    localStorage.setItem('bazuroo_users', JSON.stringify(newUsers))
+                    localStorage.setItem('bazuroo_riders', JSON.stringify(newRiders))
+                    localStorage.setItem('bazuroo_orders', JSON.stringify(newOrders))
+                    localStorage.setItem('bazuroo_merchants', JSON.stringify(loadedMerchants))
+                    localStorage.setItem('bazuroo_zones', JSON.stringify(INITIAL_ZONES))
+                    localStorage.setItem('bazuroo_rider_payouts', JSON.stringify(newRiderPayouts))
+                    localStorage.setItem('bazuroo_settlements', JSON.stringify(newSettlements))
+                    localStorage.setItem('bazuroo_payouts', JSON.stringify(newPayouts))
+                    localStorage.setItem('bazuroo_tax_records', JSON.stringify(newTaxRecords))
+                    localStorage.setItem('bazuroo_wallet_transactions', JSON.stringify(newWalletTransactions))
+                    localStorage.setItem('bazuroo_feedbacks', JSON.stringify(newFeedbacks))
+                    localStorage.setItem('bazuroo_products', JSON.stringify(newProducts))
+                    localStorage.setItem('bazuroo_store_feedbacks', JSON.stringify(newStoreFeedbacks))
+                    localStorage.setItem('bazuroo_rider_reviews', JSON.stringify(newRiderReviews))
+                    localStorage.setItem('bazuroo_rider_feedbacks', JSON.stringify(newRiderFeedbacks))
+                    localStorage.setItem('bazuroo_data_version', DATA_VERSION)
                 }
             } catch (e) {
                 console.error("Error loading mock data", e)
@@ -555,9 +693,14 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('bazuroo_payouts', JSON.stringify(payouts))
             localStorage.setItem('bazuroo_tax_records', JSON.stringify(taxRecords))
             localStorage.setItem('bazuroo_wallet_transactions', JSON.stringify(walletTransactions))
+            localStorage.setItem('bazuroo_feedbacks', JSON.stringify(feedbacks))
+            localStorage.setItem('bazuroo_products', JSON.stringify(products))
+            localStorage.setItem('bazuroo_store_feedbacks', JSON.stringify(storeFeedbacks))
+            localStorage.setItem('bazuroo_rider_reviews', JSON.stringify(riderReviews))
+            localStorage.setItem('bazuroo_rider_feedbacks', JSON.stringify(riderFeedbacks))
             localStorage.setItem('bazuroo_data_version', DATA_VERSION)
         }
-    }, [users, riders, orders, merchants, riderPayouts, isLoading])
+    }, [users, riders, orders, merchants, riderPayouts, isLoading, feedbacks, products, storeFeedbacks, riderReviews, riderFeedbacks, settlements, payouts, taxRecords, walletTransactions])
 
 
     const updateMerchantStatus = (id: string, status: MerchantStatus, reasons: string[] = []) => {
@@ -637,6 +780,28 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         setSettlements(prev => [newSettlement, ...prev])
     }
 
+    const markFeedbackSeen = (id: string, seen: boolean) => {
+        setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, isSeen: seen } : f))
+    }
+
+    const approveProduct = (id: string) => {
+        setProducts(prev => prev.map(p => p.id === id ? { ...p, status: 'approved' } : p))
+    }
+
+    const rejectProduct = (id: string, reason: string) => {
+        setProducts(prev => prev.map(p => p.id === id ? { ...p, status: 'rejected', rejectionReason: reason } : p))
+    }
+
+    const markStoreFeedbackSeen = (id: string, seen: boolean) => {
+        setStoreFeedbacks(prev => prev.map(f => f.id === id ? { ...f, isSeen: seen } : f))
+    }
+
+    const markRiderFeedbackSeen = (id: string, seen: boolean) => {
+        const updated = riderFeedbacks.map(f => f.id === id ? { ...f, isSeen: seen } : f)
+        setRiderFeedbacks(updated)
+        localStorage.setItem('bazuroo_rider_feedbacks', JSON.stringify(updated))
+    }
+
     return (
         <MockDataContext.Provider value={{
             merchants,
@@ -652,6 +817,11 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
             zones,
             taxRecords,
             walletTransactions,
+            feedbacks,
+            products,
+            storeFeedbacks,
+            riderReviews,
+            riderFeedbacks,
             isLoading,
             updateMerchantStatus,
             updateRiderStatus,
@@ -664,7 +834,12 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
             updateOrderStatus,
             updateAppSettings,
             toggleZoneSurge,
-            createSettlement
+            createSettlement,
+            markFeedbackSeen,
+            approveProduct,
+            rejectProduct,
+            markStoreFeedbackSeen,
+            markRiderFeedbackSeen
         }}>
             {children}
         </MockDataContext.Provider>

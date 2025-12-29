@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { User, Order, Rider, Merchant, OrderIssue, RiderPayout, Settlement, Payout, TaxRecord, WalletTransaction } from '@/contexts/MockDataContext';
+import { User, Order, Rider, Merchant, OrderIssue, RiderPayout, Settlement, Payout, TaxRecord, WalletTransaction, Feedback, Product, StoreFeedback, RiderReview, RiderFeedback } from '@/contexts/MockDataContext';
 import { subDays, subHours, format } from 'date-fns';
 
 export function generateUsers(count: number): User[] {
@@ -293,4 +293,147 @@ export function generateWalletTransactions(count: number, merchants: Merchant[],
             balanceAfter: parseFloat(faker.finance.amount({ min: 1000, max: 50000, dec: 2 }))
         } as WalletTransaction;
     }).filter(Boolean);
+}
+
+export function generateFeedbacks(count: number, users: User[]): Feedback[] {
+    if (!users || users.length === 0) return [];
+
+    return Array.from({ length: count }).map(() => {
+        const user = faker.helpers.arrayElement(users);
+        const sentiment = faker.helpers.weightedArrayElement([
+            { weight: 0.6, value: 'positive' },
+            { weight: 0.3, value: 'neutral' },
+            { weight: 0.1, value: 'negative' }
+        ]) as 'positive' | 'negative' | 'neutral';
+
+        let comment = "";
+        if (sentiment === 'positive') {
+            comment = faker.helpers.arrayElement([
+                "Loved the Biryani from Behrouz! Delivery was super fast ⚡️",
+                "App is buttery smooth. Maza aa gaya using it.",
+                "Packaging was excellent, food arrived piping hot. 5 stars!",
+                "Great discounts today! Saved 200rs on my order.",
+                "Rider was polite and followed instructions perfectly.",
+                "Tried the new pizza place, absolutely delicious. Will order again.",
+                "Finally a delivery app that doesn't crash on weekends.",
+                "Quick delivery even in rain, kudos to the rider! 🙏",
+                "Best service in my area compared to others.",
+                "Smooth payment process, no hassle."
+            ]);
+        } else if (sentiment === 'neutral') {
+            comment = faker.helpers.arrayElement([
+                "Food was okay, but delivery took longer than expected.",
+                "Missing cutlery in the order, otherwise fine.",
+                "Prices are a bit high but quality is decent.",
+                "App lags sometimes when tracking order.",
+                "Good variety but need more healthy options.",
+                "Delivery was on time but food was slightly cold.",
+                "Average experience, nothing special.",
+                "Rider got confused with the location despite GPS.",
+                "Okay for quick snacks, not for big meals."
+            ]);
+        } else {
+            comment = faker.helpers.arrayElement([
+                "Worst experience! Food was spilled all over the bag 😡",
+                "Delivery delayed by 45 mins and no update from support.",
+                "Items missing from my order! Refund process is a headache.",
+                "App charged me twice for the same order!",
+                "Rider was rude and refused to come to the door.",
+                "Stale food delivered. Never ordering from here again.",
+                "Customer support is a joke, waited 20 mins on call.",
+                "Why is the surge pricing so high? Scam!",
+                "Received non-veg instead of veg! This is unacceptable!",
+                "App keeps crashing on payment screen. Fix it!"
+            ]);
+        }
+
+        return {
+            id: `FB-${faker.string.alphanumeric(8).toUpperCase()}`,
+            userId: user.id,
+            userName: user.name,
+            userEmail: user.email,
+            rating: sentiment === 'positive' ? faker.number.int({ min: 4, max: 5 }) : (sentiment === 'neutral' ? 3 : faker.number.int({ min: 1, max: 2 })),
+            comment: comment,
+            sentiment: sentiment,
+            isSeen: faker.datatype.boolean({ probability: 0.4 }),
+            createdAt: faker.date.recent({ days: 30 })
+        } as Feedback;
+    });
+}
+
+export function generateProducts(count: number, merchants: Merchant[]): Product[] {
+    if (!merchants || merchants.length === 0) return [];
+
+    return Array.from({ length: count }).map(() => {
+        const merchant = faker.helpers.arrayElement(merchants);
+        const name = faker.commerce.productName();
+
+        return {
+            id: `PROD-${faker.string.alphanumeric(8).toUpperCase()}`,
+            merchantId: merchant.id,
+            storeName: merchant.storeName,
+            name: name,
+            category: faker.commerce.department(),
+            price: parseFloat(faker.commerce.price()),
+            image: `https://placehold.co/400x400/png?text=${name.replace(/ /g, '+')}`,
+            status: faker.helpers.weightedArrayElement([
+                { weight: 0.6, value: 'approved' },
+                { weight: 0.3, value: 'pending' },
+                { weight: 0.1, value: 'rejected' }
+            ]) as 'pending' | 'approved' | 'rejected',
+            rejectionReason: Math.random() < 0.1 ? "Image quality low" : undefined,
+            createdAt: faker.date.recent({ days: 15 })
+        } as Product;
+    });
+}
+
+export function generateStoreFeedbacks(count: number, merchants: Merchant[]): StoreFeedback[] {
+    if (!merchants || merchants.length === 0) return [];
+
+    return Array.from({ length: count }).map(() => {
+        const merchant = faker.helpers.arrayElement(merchants);
+        const sentiment = faker.helpers.weightedArrayElement([
+            { weight: 0.6, value: 'positive' },
+            { weight: 0.3, value: 'neutral' },
+            { weight: 0.1, value: 'negative' }
+        ]) as 'positive' | 'negative' | 'neutral';
+
+        let comment = "";
+        if (sentiment === 'positive') {
+            comment = faker.helpers.arrayElement([
+                "Sales have increased significantly since joining Bazuroo.",
+                "The admin panel is very easy to use.",
+                "Payouts are always on time. Good job team.",
+                "Support team helped me update my menu quickly.",
+                "Happy with the rider availability in my area."
+            ]);
+        } else if (sentiment === 'neutral') {
+            comment = faker.helpers.arrayElement([
+                "Need more granular control over menu item modification.",
+                "Commission rates are okay but could be better.",
+                "App is fine, but notifications are sometimes delayed.",
+                "Would like to see more analytics features."
+            ]);
+        } else {
+            comment = faker.helpers.arrayElement([
+                "Riders are cancelling orders too frequently.",
+                "Settlement for last week is still pending.",
+                "Why was my product rejected without clear reason?",
+                "The app is buggy on my tablet.",
+                "Commission is too high for small businesses."
+            ]);
+        }
+
+        return {
+            id: `SFB-${faker.string.alphanumeric(8).toUpperCase()}`,
+            merchantId: merchant.id,
+            storeName: merchant.storeName,
+            email: merchant.email,
+            rating: sentiment === 'positive' ? faker.number.int({ min: 4, max: 5 }) : (sentiment === 'neutral' ? 3 : faker.number.int({ min: 1, max: 2 })),
+            comment: comment,
+            sentiment: sentiment,
+            isSeen: faker.datatype.boolean({ probability: 0.4 }),
+            createdAt: faker.date.recent({ days: 30 })
+        } as StoreFeedback;
+    });
 }

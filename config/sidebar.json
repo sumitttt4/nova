@@ -41,11 +41,6 @@
                 "title": "Settings",
                 "href": "/settings",
                 "icon": "Settings"
-            },
-            {
-                "title": "KYC Requests",
-                "href": "/kyc",
-                "icon": "FileCheck"
             }
         ]
     },
@@ -58,9 +53,19 @@
                 "icon": "Store"
             },
             {
-                "title": "Add Store",
-                "href": "/stores/new",
+                "title": "KYC Requests",
+                "href": "/stores/kyc",
+                "icon": "FileCheck"
+            },
+            {
+                "title": "Product Validation",
+                "href": "/stores/products",
                 "icon": "CheckCircle2"
+            },
+            {
+                "title": "Feedback",
+                "href": "/stores/feedback",
+                "icon": "MessageSquare"
             }
         ]
     },
@@ -71,6 +76,11 @@
                 "title": "All Users",
                 "href": "/users",
                 "icon": "Users"
+            },
+            {
+                "title": "Feedback",
+                "href": "/users/feedback",
+                "icon": "MessageSquare"
             }
         ]
     },
@@ -141,21 +151,6 @@
                 "title": "Tax & Compliance",
                 "href": "/finance/taxes",
                 "icon": "Landmark"
-            }
-        ]
-    },
-    "kyc": {
-        "title": "KYC & Compliance",
-        "items": [
-            {
-                "title": "Pending Requests",
-                "href": "/kyc",
-                "icon": "FileCheck"
-            },
-            {
-                "title": "History",
-                "href": "/kyc/history",
-                "icon": "History"
             }
         ]
     }

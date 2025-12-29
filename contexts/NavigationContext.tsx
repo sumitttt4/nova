@@ -17,11 +17,12 @@ import {
     History,
     FileCheck,
     Calculator,
-    Landmark
+    Landmark,
+    MessageSquare
 } from "lucide-react"
 
 // --- Types ---
-export type SidebarState = "root" | "stores" | "users" | "riders" | "merchants" | "finance" | "orders" | "kyc"
+export type SidebarState = "root" | "stores" | "users" | "riders" | "merchants" | "finance" | "orders"
 
 type NavItem = {
     title: string
@@ -54,7 +55,8 @@ const IconMap: Record<string, React.ElementType> = {
     History,
     FileCheck,
     Calculator,
-    Landmark
+    Landmark,
+    MessageSquare
 }
 
 // --- Menu Configuration ---
@@ -91,7 +93,7 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
         const firstSegment = pathname.split('/')[1] as SidebarState
 
         // Define which segments trigger a drill-down
-        const VALID_CONTEXTS: SidebarState[] = ["stores", "merchants", "finance", "riders", "orders", "kyc"]
+        const VALID_CONTEXTS: SidebarState[] = ["stores", "merchants", "finance", "riders", "orders", "users"]
 
         if (VALID_CONTEXTS.includes(firstSegment)) {
             setActiveContext(firstSegment)

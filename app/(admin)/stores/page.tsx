@@ -12,7 +12,11 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Search, MoreHorizontal, Filter, Star, MapPin, Plus } from "lucide-react"
+import { StoresFilter, INITIAL_STORE_FILTERS, StoreFilterState } from "@/components/stores/stores-filter"
+import { useQueryState } from "@/hooks/use-url-state"
+import { useState } from "react"
+
+import { Search, MoreHorizontal, Star, MapPin } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,9 +29,34 @@ import Link from "next/link"
 
 export default function StoresPage() {
     const { merchants, updateMerchantStatus } = useMockData()
+    const [searchQuery, setSearchQuery] = useQueryState("q")
 
-    // Filter merchants to only show "approved" ones as active stores
-    const activeStores = merchants.filter(m => m.status === 'approved' || m.status === 'under_review')
+    // Store Filter State
+    const [filterState, setFilterState] = useState<StoreFilterState>(INITIAL_STORE_FILTERS)
+
+    // Filter Logic
+    const filteredMerchants = merchants.filter(merchant => {
+        // Search
+        const matchesSearch = !searchQuery ||
+            merchant.storeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            merchant.location?.toLowerCase().includes(searchQuery.toLowerCase())
+
+        // Status Filter (default to approved/under_review if no filter, else follow filter)
+        // If filter is active, show what matches filter. If not, showing "active stores" default.
+        const matchesStatus = filterState.status.length > 0
+            ? filterState.status.includes(merchant.status)
+            : (merchant.status === 'approved' || merchant.status === 'under_review')
+
+        const matchesType = filterState.storeType.length > 0
+            ? filterState.storeType.includes(merchant.storeType)
+            : true
+
+        const matchesLocation = !filterState.location ||
+            merchant.location?.toLowerCase().includes(filterState.location.toLowerCase()) ||
+            merchant.address.city.toLowerCase().includes(filterState.location.toLowerCase())
+
+        return matchesSearch && matchesStatus && matchesType && matchesLocation
+    })
 
     const handleSuspendStore = (id: string) => {
         if (confirm("Are you sure you want to suspend this store? It will be moved to inactive status.")) {
@@ -44,14 +73,6 @@ export default function StoresPage() {
                         Manage your partner stores, catalog and settings.
                     </p>
                 </div>
-                <div className="flex gap-2 w-full sm:w-auto">
-                    <Link href="/stores/new">
-                        <Button className="gap-2 w-full sm:w-auto">
-                            <Plus className="h-4 w-4" />
-                            Add New Store
-                        </Button>
-                    </Link>
-                </div>
             </div>
 
             <div className="flex items-center gap-2">
@@ -61,11 +82,15 @@ export default function StoresPage() {
                         type="search"
                         placeholder="Search stores..."
                         className="pl-9 bg-white border-slate-200"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <Button variant="outline" size="icon" className="border-slate-200">
-                    <Filter className="h-4 w-4 text-slate-500" />
-                </Button>
+                <StoresFilter
+                    filters={filterState}
+                    onApply={setFilterState}
+                    onReset={() => setFilterState(INITIAL_STORE_FILTERS)}
+                />
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -82,14 +107,14 @@ export default function StoresPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {activeStores.length === 0 ? (
+                        {filteredMerchants.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={7} className="h-24 text-center text-slate-500">
                                     No active stores found. Try onboarding a new merchant.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            activeStores.map((store) => (
+                            filteredMerchants.map((store) => (
                                 <TableRow key={store.id} className="hover:bg-slate-50 transition-colors">
                                     <TableCell>
                                         <Avatar className="h-9 w-9 rounded-md border border-slate-100">
