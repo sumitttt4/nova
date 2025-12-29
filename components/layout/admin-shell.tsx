@@ -95,14 +95,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                         >
                             <Search className="h-4 w-4 text-slate-500" />
                         </button>
-
-                        {/* Mobile Logo */}
-                        <div className="flex items-center gap-2 ml-2">
-                            <div className="h-8 w-8 rounded-lg bg-[#2BD67C] flex items-center justify-center text-white font-bold text-xl leading-none">
-                                B
-                            </div>
-                            <span className="font-bold text-slate-900 hidden sm:block">Bazuroo</span>
-                        </div>
                     </div>
 
                     {/* Search Command Trigger - Desktop */}
