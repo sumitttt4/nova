@@ -111,6 +111,16 @@
                 "title": "Rider performance",
                 "href": "/riders/stats",
                 "icon": "BarChart3"
+            },
+            {
+                "title": "Reviews & Ratings",
+                "href": "/riders/reviews",
+                "icon": "Star"
+            },
+            {
+                "title": "App Feedback",
+                "href": "/riders/feedback",
+                "icon": "MessageSquare"
             }
         ]
     },

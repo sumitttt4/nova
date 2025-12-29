@@ -142,16 +142,44 @@ export function generateOrders(count: number, users: User[], merchants: Merchant
     return Array.from({ length: count }).map((_, i) => {
         const user = faker.helpers.arrayElement(users);
         const merchant = faker.helpers.arrayElement(merchants);
+        const status = faker.helpers.arrayElement(['pending', 'preparing', 'ready_for_pickup', 'out_for_delivery', 'delivered', 'cancelled']);
+        const paymentMode = faker.helpers.weightedArrayElement([
+            { weight: 0.7, value: 'Prepaid' },
+            { weight: 0.3, value: 'COD' }
+        ]) as 'COD' | 'Prepaid';
+
+        // Determine payment status based on order status and payment mode
+        let paymentStatus: 'pending' | 'paid' | 'failed' = 'pending';
+        let isPaid = false;
+
+        if (paymentMode === 'Prepaid') {
+            // Prepaid orders are paid upfront
+            paymentStatus = status === 'cancelled' ? 'failed' : 'paid';
+            isPaid = paymentStatus === 'paid';
+        } else {
+            // COD orders are paid on delivery
+            if (status === 'delivered') {
+                paymentStatus = 'paid';
+                isPaid = true;
+            } else if (status === 'cancelled') {
+                paymentStatus = 'failed';
+            }
+        }
+
         return {
             id: `ORD-${Date.now()}-${i}-${faker.string.alphanumeric(4).toUpperCase()}`,
             customerName: user.name,
             customerId: user.id,
             storeName: merchant?.storeName || "Unknown Store",
             amount: parseFloat(faker.finance.amount({ min: 50, max: 2500, dec: 0 })),
-            status: faker.helpers.arrayElement(['pending', 'preparing', 'ready_for_pickup', 'out_for_delivery', 'delivered', 'cancelled']),
+            status,
             createdAt: faker.date.recent({ days: 10 }),
+            paymentMode,
+            paymentStatus,
+            isPaid
         } as Order;
     });
+
 }
 
 export function generateRiderPayouts(count: number, riders: Rider[]): RiderPayout[] {
@@ -435,5 +463,133 @@ export function generateStoreFeedbacks(count: number, merchants: Merchant[]): St
             isSeen: faker.datatype.boolean({ probability: 0.4 }),
             createdAt: faker.date.recent({ days: 30 })
         } as StoreFeedback;
+    });
+}
+
+export function generateRiderReviews(count: number, riders: Rider[], users: User[]): RiderReview[] {
+    if (!riders || riders.length === 0 || !users || users.length === 0) return [];
+
+    return Array.from({ length: count }).map(() => {
+        const rider = faker.helpers.arrayElement(riders);
+        const user = faker.helpers.arrayElement(users);
+        const rating = faker.helpers.weightedArrayElement([
+            { weight: 0.6, value: 5 },
+            { weight: 0.2, value: 4 },
+            { weight: 0.1, value: 3 },
+            { weight: 0.05, value: 2 },
+            { weight: 0.05, value: 1 }
+        ]);
+
+        let comment = "";
+        if (rating >= 4) {
+            comment = faker.helpers.arrayElement([
+                "Very polite rider.",
+                "Delivered on time, good service.",
+                "Followed instructions perfectly.",
+                "Quick and efficient.",
+                "Great behavior."
+            ]);
+        } else if (rating === 3) {
+            comment = faker.helpers.arrayElement([
+                "Delivery was okay but a bit late.",
+                "Rider called too many times for location.",
+                "Food was slightly cold.",
+                "Average experience."
+            ]);
+        } else {
+            comment = faker.helpers.arrayElement([
+                "Rude behavior.",
+                "Asked for extra tip unnecessarily.",
+                "Did not follow delivery instructions.",
+                "Late delivery and no apology.",
+                "Spilled the food."
+            ]);
+        }
+
+        return {
+            id: `RR-${faker.string.alphanumeric(8).toUpperCase()}`,
+            riderId: rider.id,
+            riderName: rider.name,
+            userId: user.id,
+            userName: user.name,
+            orderId: `ORD-${faker.string.alphanumeric(6).toUpperCase()}`,
+            rating: rating as number,
+            comment: comment,
+            createdAt: faker.date.recent({ days: 30 })
+        } as RiderReview;
+    });
+}
+
+export function generateRiderFeedbacks(count: number, riders: Rider[]): RiderFeedback[] {
+    if (!riders || riders.length === 0) return [];
+
+    return Array.from({ length: count }).map(() => {
+        const rider = faker.helpers.arrayElement(riders);
+
+        const category = faker.helpers.arrayElement(['app_issue', 'payment', 'support', 'suggestion', 'other']) as RiderFeedback['category'];
+        const sentiment = faker.helpers.weightedArrayElement([
+            { weight: 0.2, value: 'positive' },
+            { weight: 0.3, value: 'neutral' },
+            { weight: 0.5, value: 'negative' }
+        ]) as RiderFeedback['sentiment'];
+
+        let comment = "";
+        switch (category) {
+            case 'app_issue':
+                comment = faker.helpers.arrayElement([
+                    "App crashes when I try to upload photo.",
+                    "GPS is not accurate in my area.",
+                    "Battery drains very fast with this new update.",
+                    "Cannot mark order as delivered.",
+                    "Notification sound is not working."
+                ]);
+                break;
+            case 'payment':
+                comment = faker.helpers.arrayElement([
+                    "My last payout is still pending.",
+                    "Incorrect incentive calculation for yesterday.",
+                    "Withdrawal failed but amount deducted.",
+                    "Need detailed breakdown of my earnings.",
+                    "Bonus not credited yet."
+                ]);
+                break;
+            case 'support':
+                comment = faker.helpers.arrayElement([
+                    "Support team not picking up call.",
+                    "Waited 20 mins for issue resolution.",
+                    "Rider support is very helpful, thanks.",
+                    "Need better support during night shifts.",
+                    "My issue was resolved quickly."
+                ]);
+                break;
+            case 'suggestion':
+                comment = faker.helpers.arrayElement([
+                    "Please add dark mode to the rider app.",
+                    "Increase delivery radius for electric bikes.",
+                    "Allow us to reject orders without penalty in rain.",
+                    "Need a better raincoat.",
+                    "Show estimated earnings before accepting order."
+                ]);
+                break;
+            default:
+                comment = faker.helpers.arrayElement([
+                    "General feedback about the process.",
+                    "Traffic is too much in this zone.",
+                    "Restaurants take too long to prepare food.",
+                    "Customers sometimes give wrong location.",
+                    "Everything is going well."
+                ]);
+        }
+
+        return {
+            id: `RFB-${faker.string.alphanumeric(8).toUpperCase()}`,
+            riderId: rider.id,
+            riderName: rider.name,
+            category: category,
+            sentiment: sentiment,
+            comment: comment,
+            isSeen: faker.datatype.boolean({ probability: 0.3 }),
+            createdAt: faker.date.recent({ days: 30 })
+        } as RiderFeedback;
     });
 }

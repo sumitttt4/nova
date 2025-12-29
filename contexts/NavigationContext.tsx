@@ -18,7 +18,8 @@ import {
     FileCheck,
     Calculator,
     Landmark,
-    MessageSquare
+    MessageSquare,
+    Star
 } from "lucide-react"
 
 // --- Types ---
@@ -56,7 +57,8 @@ const IconMap: Record<string, React.ElementType> = {
     FileCheck,
     Calculator,
     Landmark,
-    MessageSquare
+    MessageSquare,
+    Star
 }
 
 // --- Menu Configuration ---

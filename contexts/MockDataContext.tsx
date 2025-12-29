@@ -135,9 +135,12 @@ export type Order = {
     customerName: string
     storeName: string
     amount: number
-    status: "preparing" | "delivered" | "cancelled" | "ready"
+    status: "preparing" | "delivered" | "cancelled" | "ready" | "pending" | "out_for_delivery" | "ready_for_pickup"
     createdAt: Date
     customerId?: string
+    paymentMode: 'COD' | 'Prepaid'
+    paymentStatus: 'pending' | 'paid' | 'failed'
+    isPaid: boolean
 }
 
 export type Zone = {
@@ -463,7 +466,6 @@ interface MockDataContextType {
     walletTransactions: WalletTransaction[]
     feedbacks: Feedback[]
     products: Product[]
-    products: Product[]
     storeFeedbacks: StoreFeedback[]
     riderReviews: RiderReview[]
     riderFeedbacks: RiderFeedback[]
@@ -512,7 +514,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     const [riderReviews, setRiderReviews] = React.useState<RiderReview[]>([])
     const [riderFeedbacks, setRiderFeedbacks] = React.useState<RiderFeedback[]>([])
 
-    const DATA_VERSION = '2.8'
+    const DATA_VERSION = '3.0'
     const STORAGE_KEYS = [
         'bazuroo_users',
         'bazuroo_riders',
@@ -615,14 +617,14 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                     else setRiderFeedbacks(generateRiderFeedbacks(20, JSON.parse(localRiders)))
                 } else {
                     console.log("Generating fresh Mock Data...")
-                    const newUsers = generateUsers(50)
-                    const newRiders = generateRiders(20)
+                    const newUsers = generateUsers(200)
+                    const newRiders = generateRiders(80)
 
                     // Use loadedMerchants (which is either from LS or newly generated) for orders
-                    const newOrders = generateOrders(100, newUsers, loadedMerchants)
-                    const newRiderPayouts = generateRiderPayouts(50, newRiders)
-                    const newSettlements = generateSettlements(20, loadedMerchants, newRiders)
-                    const newPayouts = generatePayouts(50, loadedMerchants)
+                    const newOrders = generateOrders(500, newUsers, loadedMerchants)
+                    const newRiderPayouts = generateRiderPayouts(100, newRiders)
+                    const newSettlements = generateSettlements(40, loadedMerchants, newRiders)
+                    const newPayouts = generatePayouts(100, loadedMerchants)
 
                     setUsers(newUsers)
                     setRiders(newRiders)
@@ -632,23 +634,23 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                     setSettlements(newSettlements)
                     setPayouts(newPayouts)
 
-                    const newTaxRecords = generateTaxRecords(50, loadedMerchants)
+                    const newTaxRecords = generateTaxRecords(100, loadedMerchants)
                     setTaxRecords(newTaxRecords)
 
-                    const newWalletTransactions = generateWalletTransactions(100, loadedMerchants, newRiders)
+                    const newWalletTransactions = generateWalletTransactions(200, loadedMerchants, newRiders)
                     setWalletTransactions(newWalletTransactions)
 
-                    const newFeedbacks = generateFeedbacks(30, newUsers)
+                    const newFeedbacks = generateFeedbacks(60, newUsers)
                     setFeedbacks(newFeedbacks)
 
-                    const newProducts = generateProducts(50, loadedMerchants)
+                    const newProducts = generateProducts(100, loadedMerchants)
                     setProducts(newProducts)
 
-                    const newStoreFeedbacks = generateStoreFeedbacks(20, loadedMerchants)
+                    const newStoreFeedbacks = generateStoreFeedbacks(40, loadedMerchants)
                     setStoreFeedbacks(newStoreFeedbacks)
 
-                    const newRiderReviews = generateRiderReviews(30, newRiders, newUsers)
-                    const newRiderFeedbacks = generateRiderFeedbacks(20, newRiders)
+                    const newRiderReviews = generateRiderReviews(80, newRiders, newUsers)
+                    const newRiderFeedbacks = generateRiderFeedbacks(40, newRiders)
 
                     setRiderReviews(newRiderReviews)
                     setRiderFeedbacks(newRiderFeedbacks)
