@@ -32,7 +32,7 @@ import { format } from "date-fns"
 export default function UserDetailPage() {
     const params = useParams()
     const router = useRouter()
-    const { users, orders } = useMockData()
+    const { users, orders, updateUserStatus } = useMockData()
 
     // Find User
     const user = users.find(u => u.id === params?.userId || (params?.userId && u.id.toLowerCase() === (params.userId as string).toLowerCase())) || users[0]
@@ -79,13 +79,30 @@ export default function UserDetailPage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" className="text-yellow-600 border-yellow-200 hover:bg-yellow-50 hover:text-yellow-700">
+                    <Button
+                        variant="outline"
+                        className="text-yellow-600 border-yellow-200 hover:bg-yellow-50 hover:text-yellow-700"
+                        onClick={() => {
+                            if (confirm(`Are you sure you want to warn ${user.name}?`)) {
+                                updateUserStatus(user.id, 'warned')
+                            }
+                        }}
+                        disabled={user.status === 'warned' || user.status === 'banned'}
+                    >
                         <ShieldAlert className="mr-2 h-4 w-4" />
-                        Warn User
+                        {user.status === 'warned' ? 'Already Warned' : 'Warn User'}
                     </Button>
-                    <Button variant="destructive">
+                    <Button
+                        variant="destructive"
+                        onClick={() => {
+                            if (confirm(`Are you sure you want to ban ${user.name}? This action cannot be easily undone.`)) {
+                                updateUserStatus(user.id, 'banned')
+                            }
+                        }}
+                        disabled={user.status === 'banned'}
+                    >
                         <Ban className="mr-2 h-4 w-4" />
-                        Ban User
+                        {user.status === 'banned' ? 'Already Banned' : 'Ban User'}
                     </Button>
                 </div>
             </div>

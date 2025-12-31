@@ -5,6 +5,7 @@ import { RotateCcw, SlidersHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Slider } from "@/components/ui/slider"
 import {
     Sheet,
     SheetContent,
@@ -16,23 +17,23 @@ import {
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 
-interface StoresFilterProps {
+interface UsersFilterProps {
     className?: string
-    filters: StoreFilterState
-    onApply: (filters: StoreFilterState) => void
+    filters: UserFilterState
+    onApply: (filters: UserFilterState) => void
     onReset: () => void
 }
 
-export type StoreFilterState = {
+export type UserFilterState = {
     status: string[]
-    storeType: string[]
-    location: string
+    minBalance: number
+    maxBalance: number
 }
 
-export const INITIAL_STORE_FILTERS: StoreFilterState = {
+export const INITIAL_USER_FILTERS: UserFilterState = {
     status: [],
-    storeType: [],
-    location: ""
+    minBalance: 0,
+    maxBalance: 10000
 }
 
 // FilterSection Sub-component
@@ -62,22 +63,32 @@ function FilterChip({ label, isActive, onClick }: { label: string; isActive: boo
     )
 }
 
-export function StoresFilter({ className, filters, onApply, onReset }: StoresFilterProps) {
-    const [localFilters, setLocalFilters] = React.useState<StoreFilterState>(filters)
+export function UsersFilter({ className, filters, onApply, onReset }: UsersFilterProps) {
+    const [localFilters, setLocalFilters] = React.useState<UserFilterState>(filters)
     const [open, setOpen] = React.useState(false)
+    const [balanceRange, setBalanceRange] = React.useState<[number, number]>([
+        filters.minBalance,
+        filters.maxBalance
+    ])
 
     // Sync when external filters change
     React.useEffect(() => {
         setLocalFilters(filters)
+        setBalanceRange([filters.minBalance, filters.maxBalance])
     }, [filters])
 
     const handleApply = () => {
-        onApply(localFilters)
+        onApply({
+            ...localFilters,
+            minBalance: balanceRange[0],
+            maxBalance: balanceRange[1]
+        })
         setOpen(false)
     }
 
     const handleReset = () => {
-        setLocalFilters(INITIAL_STORE_FILTERS)
+        setLocalFilters(INITIAL_USER_FILTERS)
+        setBalanceRange([0, 10000])
         onReset()
         setOpen(false)
     }
@@ -93,45 +104,32 @@ export function StoresFilter({ className, filters, onApply, onReset }: StoresFil
         })
     }
 
-    const toggleType = (type: string) => {
-        setLocalFilters(prev => {
-            const exists = prev.storeType.includes(type)
-            if (exists) {
-                return { ...prev, storeType: prev.storeType.filter(t => t !== type) }
-            } else {
-                return { ...prev, storeType: [...prev.storeType, type] }
-            }
-        })
-    }
-
     const activeFilterCount = React.useMemo(() => {
         let count = 0
         if (filters.status.length > 0) count++
-        if (filters.storeType.length > 0) count++
-        if (filters.location) count++
+        if (filters.minBalance > 0 || filters.maxBalance < 10000) count++
         return count
     }, [filters])
 
-    const statuses = ["approved", "under_review", "rejected", "blocked"]
-    const storeTypes = ["restaurant", "grocery", "bakery", "pharmacy", "electronics"]
+    const statuses = ["active", "warned", "banned"]
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
                 <Button
                     variant="outline"
+                    size="icon"
                     className={cn(
-                        "gap-2 border-slate-200 hover:border-[#2BD67C]/50 hover:bg-[#2BD67C]/5 transition-all",
+                        "border-slate-200 hover:border-[#2BD67C]/50 hover:bg-[#2BD67C]/5 transition-all",
                         activeFilterCount > 0 && "border-[#2BD67C]/30 bg-[#2BD67C]/5",
                         className
                     )}
                 >
                     <SlidersHorizontal className="h-4 w-4" />
-                    Filters
                     {activeFilterCount > 0 && (
-                        <Badge className="bg-[#2BD67C] text-white text-[10px] h-5 px-1.5 min-w-[20px] flex items-center justify-center">
+                        <span className="absolute -top-1 -right-1 bg-[#2BD67C] text-white text-[10px] h-4 w-4 rounded-full flex items-center justify-center">
                             {activeFilterCount}
-                        </Badge>
+                        </span>
                     )}
                 </Button>
             </SheetTrigger>
@@ -140,7 +138,7 @@ export function StoresFilter({ className, filters, onApply, onReset }: StoresFil
                 {/* Header */}
                 <SheetHeader className="px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-10">
                     <div className="flex items-center justify-between">
-                        <SheetTitle className="text-lg font-bold text-slate-900">Filter Stores</SheetTitle>
+                        <SheetTitle className="text-lg font-bold text-slate-900">Filter Users</SheetTitle>
                         <Button
                             variant="ghost"
                             size="sm"
@@ -156,12 +154,12 @@ export function StoresFilter({ className, filters, onApply, onReset }: StoresFil
                 {/* Scrollable Body */}
                 <div className="flex-1 overflow-y-auto px-6 py-4">
                     {/* Status */}
-                    <FilterSection label="Status">
+                    <FilterSection label="Account Status">
                         <div className="flex flex-wrap gap-2">
                             {statuses.map(status => (
                                 <FilterChip
                                     key={status}
-                                    label={status.replace(/_/g, " ")}
+                                    label={status}
                                     isActive={localFilters.status.includes(status)}
                                     onClick={() => toggleStatus(status)}
                                 />
@@ -174,33 +172,28 @@ export function StoresFilter({ className, filters, onApply, onReset }: StoresFil
                         )}
                     </FilterSection>
 
-                    {/* Category */}
-                    <FilterSection label="Category">
-                        <div className="flex flex-wrap gap-2">
-                            {storeTypes.map(type => (
-                                <FilterChip
-                                    key={type}
-                                    label={type}
-                                    isActive={localFilters.storeType.includes(type)}
-                                    onClick={() => toggleType(type)}
-                                />
-                            ))}
+                    {/* Wallet Balance Range Slider */}
+                    <FilterSection label="Wallet Balance">
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-slate-500">Range</span>
+                                <span className="text-xs font-bold text-slate-700">
+                                    ₹{balanceRange[0].toLocaleString('en-IN')} - ₹{balanceRange[1].toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                            <Slider
+                                min={0}
+                                max={10000}
+                                step={100}
+                                value={balanceRange}
+                                onValueChange={(val) => setBalanceRange(val as [number, number])}
+                                className="[&_[role=slider]]:bg-[#2BD67C] [&_[role=slider]]:border-[#2BD67C] [&_.bg-primary]:bg-[#2BD67C]"
+                            />
+                            <div className="flex items-center justify-between text-[10px] text-slate-400">
+                                <span>₹0</span>
+                                <span>₹10,000</span>
+                            </div>
                         </div>
-                        {localFilters.storeType.length > 0 && (
-                            <p className="text-[10px] text-[#2BD67C] mt-2 font-medium">
-                                {localFilters.storeType.length} selected
-                            </p>
-                        )}
-                    </FilterSection>
-
-                    {/* Location */}
-                    <FilterSection label="Location">
-                        <Input
-                            placeholder="Search by city or area..."
-                            className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                            value={localFilters.location}
-                            onChange={(e) => setLocalFilters({ ...localFilters, location: e.target.value })}
-                        />
                     </FilterSection>
                 </div>
 

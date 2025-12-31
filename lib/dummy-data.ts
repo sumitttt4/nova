@@ -103,7 +103,7 @@ export function generateMerchants(count: number): Merchant[] {
                 phone: faker.phone.number(),
                 email: email
             },
-            status: faker.helpers.weightedArrayElement([{ weight: 0.7, value: 'approved' }, { weight: 0.2, value: 'under_review' }, { weight: 0.1, value: 'rejected' }]) as 'approved' | 'rejected' | 'under_review',
+            status: faker.helpers.weightedArrayElement([{ weight: 0.5, value: 'approved' }, { weight: 0.35, value: 'under_review' }, { weight: 0.15, value: 'rejected' }]) as 'approved' | 'rejected' | 'under_review',
             address: {
                 line1: faker.location.streetAddress(),
                 line2: faker.location.secondaryAddress(),

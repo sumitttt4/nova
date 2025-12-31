@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Store, Bike, ShoppingBag, Wallet, Users, TrendingUp, TrendingDown, Package, XCircle, Clock, CheckCircle2, DollarSign, CreditCard, Banknote, ArrowRight, Activity } from "lucide-react"
 import { isSameDay, isWithinInterval, subDays, subWeeks, subMonths, subYears, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
 import { cn } from "@/lib/utils"
+import { LiveTicker } from "@/components/dashboard/LiveTicker"
 
 type TimeRange = 'today' | 'weekly' | 'monthly' | 'yearly'
 
@@ -110,12 +111,27 @@ export default function DashboardPage() {
                 </Tabs>
             </div>
 
-            {/* Quick Stats Bar */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {/* Quick Stats Bar with Network Status */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                 <QuickStat label="Live Orders" value={pendingOrders} icon={Activity} pulse />
                 <QuickStat label="Active Riders" value={activeRiders} icon={Bike} />
-                <QuickStat label="Revenue Today" value={`₹${totalPaymentReceived.toLocaleString()}`} icon={DollarSign} />
+                <QuickStat label="Revenue Today" value={`₹${totalPaymentReceived.toLocaleString('en-IN')}`} icon={DollarSign} />
                 <QuickStat label="Active Stores" value={activeStores} icon={Store} />
+
+                {/* Network Status Indicator */}
+                <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg border border-[#278F27]/30 bg-[#278F27]/5 shadow-[0_1px_3px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)]">
+                    <div className="relative p-1.5 sm:p-2 rounded-lg bg-[#278F27]/20">
+                        <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-[#278F27]" />
+                        <span className="absolute top-0 right-0 flex h-2.5 w-2.5 sm:h-3 sm:w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#278F27] opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 bg-[#278F27]"></span>
+                        </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <div className="text-sm sm:text-base font-bold text-[#278F27] truncate">OPERATIONAL</div>
+                        <div className="text-[10px] sm:text-xs text-slate-500 truncate">Network Status</div>
+                    </div>
+                </div>
             </div>
 
             {/* Store & Rider Metrics Combined */}
@@ -124,7 +140,7 @@ export default function DashboardPage() {
                     <Store className="h-4 w-4 sm:h-5 sm:w-5 text-slate-600" />
                     Store & Rider Metrics
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <MetricCard
                         title="Active / Total Stores"
                         value={`${activeStores} / ${totalStores}`}
@@ -166,7 +182,7 @@ export default function DashboardPage() {
                     <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-slate-600" />
                     <span className="truncate">Order Metrics ({timeRange.charAt(0).toUpperCase() + timeRange.slice(1)})</span>
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <MetricCard title="Total Orders" value={totalOrders} icon={ShoppingBag} trend={`${ordersPlaced} placed`} trendUp={true} href="/orders" />
                     <MetricCard title="Delivered Orders" value={deliveredOrders} icon={CheckCircle2} trend={`${ordersPlaced > 0 ? ((deliveredOrders / ordersPlaced) * 100).toFixed(0) : 0}% success rate`} trendUp={deliveredOrders > cancelledOrders} variant="success" href="/orders" />
                     <MetricCard title="Cancelled Orders" value={cancelledOrders} icon={XCircle} trend={`${cancellationRate}% cancelled`} trendUp={false} variant="danger" href="/orders" />
@@ -174,19 +190,39 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Payment Metrics */}
-            <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                    <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-slate-600" />
-                    <span className="truncate">Payment Metrics ({timeRange.charAt(0).toUpperCase() + timeRange.slice(1)})</span>
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                    <MetricCard title="Total Payment Received" value={`₹${totalPaymentReceived.toLocaleString()}`} icon={DollarSign} trend="All prepaid cash" trendUp={true} variant="success" href="/finance" />
-                    <MetricCard title="COD Received" value={`₹${codReceived.toLocaleString()}`} icon={Banknote} trend="Cash on delivery" trendUp={true} href="/finance" />
-                    <MetricCard title="COD with Riders" value={`₹${codWithRiders.toLocaleString()}`} icon={Bike} trend="Cash collected" trendUp={false} variant="warning" href="/riders" />
-                    <MetricCard title="Prepaid Received" value={`₹${prepaidReceived.toLocaleString()}`} icon={CreditCard} trend="Online payments" trendUp={true} href="/finance" />
-                </div>
-            </div>
+            {/* Revenue Trends with Integrated Financial Stats */}
+            <Card className="border-2 shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_2px_rgba(255,255,255,0.5)]">
+                <CardHeader className="pb-2">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div>
+                            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                                <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <span className="truncate">Revenue Trends ({timeRange.charAt(0).toUpperCase() + timeRange.slice(1)})</span>
+                            </CardTitle>
+                            <CardDescription className="text-xs sm:text-sm">Financial performance overview</CardDescription>
+                        </div>
+                        {/* Integrated Key Metrics in Header */}
+                        <div className="flex flex-wrap gap-4 lg:gap-6">
+                            <div className="text-center">
+                                <div className="text-xl sm:text-2xl font-bold text-[#2BD67C]">₹{totalPaymentReceived.toLocaleString('en-IN')}</div>
+                                <div className="text-[10px] sm:text-xs text-slate-500 font-medium">Total Revenue</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-xl sm:text-2xl font-bold text-slate-700">₹{ordersPlaced > 0 ? Math.round(totalPaymentReceived / ordersPlaced).toLocaleString('en-IN') : 0}</div>
+                                <div className="text-[10px] sm:text-xs text-slate-500 font-medium">Avg Order Value</div>
+                            </div>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <MetricCard title="Total Payment Received" value={`₹${totalPaymentReceived.toLocaleString('en-IN')}`} icon={DollarSign} trend="All prepaid cash" trendUp={true} variant="success" href="/finance" />
+                        <MetricCard title="COD Received" value={`₹${codReceived.toLocaleString('en-IN')}`} icon={Banknote} trend="Cash on delivery" trendUp={true} href="/finance" />
+                        <MetricCard title="COD with Riders" value={`₹${codWithRiders.toLocaleString('en-IN')}`} icon={Bike} trend="Cash collected" trendUp={false} variant="warning" href="/riders" />
+                        <MetricCard title="Prepaid Received" value={`₹${prepaidReceived.toLocaleString('en-IN')}`} icon={CreditCard} trend="Online payments" trendUp={true} href="/finance" />
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* User Metrics */}
             <div>
@@ -194,57 +230,65 @@ export default function DashboardPage() {
                     <Users className="h-4 w-4 sm:h-5 sm:w-5 text-slate-600" />
                     User Metrics
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <MetricCard title="Total Users Registered" value={totalUsers.toLocaleString()} icon={Users} trend="Overall registrations" trendUp={true} href="/users" />
                     <MetricCard title="Today's Registrations" value={todayUserRegistrations} icon={TrendingUp} trend="New signups today" trendUp={todayUserRegistrations > 0} href="/users" />
                 </div>
             </div>
 
-            {/* Conversion Funnel */}
-            <Card className="border-2 shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_2px_rgba(255,255,255,0.5)]">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                        <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
-                        <span className="truncate">Order Conversion Funnel ({timeRange.charAt(0).toUpperCase() + timeRange.slice(1)})</span>
-                    </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">Track customer journey from order placement to completion</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                        <div className="text-center p-3 sm:p-4 rounded-lg bg-slate-50 shadow-inner">
-                            <div className="text-3xl sm:text-4xl font-bold text-slate-900">{ordersPlaced}</div>
-                            <div className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">Orders Placed</div>
-                            <div className="text-xs text-slate-400 mt-2">100%</div>
+            {/* Two Column Layout: Conversion Funnel + Live Ticker */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                {/* Conversion Funnel */}
+                <Card className="lg:col-span-2 border-2 shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_2px_rgba(255,255,255,0.5)]">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span className="truncate">Order Conversion Funnel ({timeRange.charAt(0).toUpperCase() + timeRange.slice(1)})</span>
+                        </CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">Track customer journey from order placement to completion</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                            <div className="text-center p-3 sm:p-4 rounded-lg bg-slate-50 shadow-inner">
+                                <div className="text-3xl sm:text-4xl font-bold text-slate-900">{ordersPlaced}</div>
+                                <div className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">Orders Placed</div>
+                                <div className="text-xs text-slate-400 mt-2">100%</div>
+                            </div>
+                            <div className="text-center p-3 sm:p-4 rounded-lg bg-green-50 shadow-inner">
+                                <div className="text-3xl sm:text-4xl font-bold text-green-600">{ordersPaid}</div>
+                                <div className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">Orders Paid</div>
+                                <div className="text-xs text-green-600 mt-2 font-semibold">{conversionRate}% conversion</div>
+                            </div>
+                            <div className="text-center p-3 sm:p-4 rounded-lg bg-red-50 shadow-inner">
+                                <div className="text-3xl sm:text-4xl font-bold text-red-600">{cancelledOrders}</div>
+                                <div className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">Orders Cancelled</div>
+                                <div className="text-xs text-red-600 mt-2 font-semibold">{cancellationRate}% drop-off</div>
+                            </div>
                         </div>
-                        <div className="text-center p-3 sm:p-4 rounded-lg bg-green-50 shadow-inner">
-                            <div className="text-3xl sm:text-4xl font-bold text-green-600">{ordersPaid}</div>
-                            <div className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">Orders Paid</div>
-                            <div className="text-xs text-green-600 mt-2 font-semibold">{conversionRate}% conversion</div>
-                        </div>
-                        <div className="text-center p-3 sm:p-4 rounded-lg bg-red-50 shadow-inner">
-                            <div className="text-3xl sm:text-4xl font-bold text-red-600">{cancelledOrders}</div>
-                            <div className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">Orders Cancelled</div>
-                            <div className="text-xs text-red-600 mt-2 font-semibold">{cancellationRate}% drop-off</div>
-                        </div>
-                    </div>
 
-                    {/* Visual Funnel */}
-                    <div className="mt-4 sm:mt-6 space-y-2">
-                        <div className="flex items-center gap-2">
-                            <div className="h-2 sm:h-3 bg-slate-300 rounded-full w-full shadow-inner"></div>
-                            <span className="text-xs text-slate-500 whitespace-nowrap">Placed</span>
+                        {/* Visual Funnel */}
+                        <div className="mt-4 sm:mt-6 space-y-2">
+                            <div className="flex items-center gap-2">
+                                <div className="h-2 sm:h-3 bg-slate-300 rounded-full w-full shadow-inner"></div>
+                                <span className="text-xs text-slate-500 whitespace-nowrap">Placed</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="h-2 sm:h-3 bg-green-500 rounded-full transition-all duration-500 shadow-md" style={{ width: `${conversionRate}%` }}></div>
+                                <span className="text-xs text-green-600 whitespace-nowrap font-semibold">{conversionRate}%</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="h-2 sm:h-3 bg-red-500 rounded-full transition-all duration-500 shadow-md" style={{ width: `${cancellationRate}%` }}></div>
+                                <span className="text-xs text-red-600 whitespace-nowrap font-semibold">{cancellationRate}%</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="h-2 sm:h-3 bg-green-500 rounded-full transition-all duration-500 shadow-md" style={{ width: `${conversionRate}%` }}></div>
-                            <span className="text-xs text-green-600 whitespace-nowrap font-semibold">{conversionRate}%</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="h-2 sm:h-3 bg-red-500 rounded-full transition-all duration-500 shadow-md" style={{ width: `${cancellationRate}%` }}></div>
-                            <span className="text-xs text-red-600 whitespace-nowrap font-semibold">{cancellationRate}%</span>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+
+                {/* Live Activity Ticker */}
+                <div className="lg:col-span-1">
+                    <LiveTicker />
+                </div>
+            </div>
         </div>
     )
 }

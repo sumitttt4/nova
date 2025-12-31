@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Search, MoreHorizontal, Filter, Building2, Store } from "lucide-react"
+import { Search, MoreHorizontal, Building2, Store } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,17 +22,24 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useMockData } from "@/contexts/MockDataContext"
 import Link from "next/link"
-import { PayoutsTable } from "@/components/merchants/PayoutsTable"
-import { LiveMenuStatus } from "@/components/merchants/LiveMenuStatus"
+import { MerchantInsights } from "@/components/merchants/MerchantInsights"
+import * as React from "react"
 
 export default function MerchantsPage() {
     const { merchants, updateMerchantStatus } = useMockData()
+    const [searchTerm, setSearchTerm] = React.useState("")
 
     const handleOffboard = (id: string) => {
         if (confirm("Are you sure you want to offboard this merchant? This will block their access.")) {
             updateMerchantStatus(id, 'rejected', ['Offboarded by Admin'])
         }
     }
+
+    const filteredMerchants = merchants.filter(merchant =>
+        merchant.storeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        merchant.personName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        merchant.location.toLowerCase().includes(searchTerm.toLowerCase())
+    )
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
@@ -44,38 +51,36 @@ export default function MerchantsPage() {
                     </p>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <Link href="/stores/new">
-                        <Button className="gap-2 w-full sm:w-auto">
+                    <Link href="/merchants/applications">
+                        <Button className="gap-2 w-full sm:w-auto bg-[#2BD67C] hover:bg-[#2BD67C]/90 text-black font-semibold">
                             <Building2 className="h-4 w-4" />
-                            Onboard Merchant
+                            View Applications
                         </Button>
                     </Link>
                 </div>
             </div>
 
-            {/* Insight Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <LiveMenuStatus />
-                <PayoutsTable />
-            </div>
+            {/* Consolidated Insights Panel */}
+            <MerchantInsights />
 
+            {/* Merchant Directory */}
             <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                    <div className="relative flex-1 max-w-sm">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-slate-900">Partner Directory</h2>
+                    <div className="relative w-64">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
                         <Input
                             type="search"
                             placeholder="Search merchants..."
-                            className="pl-9 bg-white border-slate-200"
+                            className="pl-9 h-9 bg-white border-slate-200 text-sm"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Button variant="outline" size="icon" className="border-slate-200">
-                        <Filter className="h-4 w-4 text-slate-500" />
-                    </Button>
                 </div>
 
                 <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
-                    <Table className="min-w-[1000px]">
+                    <Table className="min-w-[900px]">
                         <TableHeader className="bg-slate-50">
                             <TableRow>
                                 <TableHead className="w-[50px]"></TableHead>
@@ -88,14 +93,14 @@ export default function MerchantsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {merchants.length === 0 ? (
+                            {filteredMerchants.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} className="h-24 text-center text-slate-500">
                                         No merchants found.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                merchants.map((merchant) => (
+                                filteredMerchants.map((merchant) => (
                                     <TableRow key={merchant.id} className="hover:bg-slate-50 transition-colors">
                                         <TableCell>
                                             <Avatar className="h-9 w-9 rounded-md border border-slate-100">

@@ -88,7 +88,7 @@ export default function PaymentsPage() {
                     </p>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <Button variant="outline" className="gap-2">
+                    <Button variant="outline" className="gap-2" onClick={() => alert("Export CSV functionality will be available in production.")}>
                         <Download className="h-4 w-4" />
                         Export CSV
                     </Button>
@@ -164,8 +164,8 @@ export default function PaymentsPage() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                                            <DropdownMenuItem>Issue Refund</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => alert(`Transaction details: ${txn.id}`)}>View Details</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => alert(`Refund initiated for ${txn.id}`)}>Issue Refund</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>

@@ -1,29 +1,22 @@
 "use client"
 
 import * as React from "react"
-import { Filter, X } from "lucide-react"
+import { Filter, RotateCcw, SlidersHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { Slider } from "@/components/ui/slider"
 import {
     Sheet,
     SheetContent,
-    SheetDescription,
     SheetFooter,
     SheetHeader,
     SheetTitle,
     SheetTrigger,
     SheetClose
 } from "@/components/ui/sheet"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 
 interface OrdersFilterProps {
     className?: string
@@ -48,22 +41,62 @@ export const INITIAL_FILTERS: FilterState = {
     storeName: ""
 }
 
+// FilterSection Sub-component
+function FilterSection({ label, children }: { label: string; children: React.ReactNode }) {
+    return (
+        <div className="mb-6">
+            <h4 className="text-sm font-bold text-slate-700 mb-3">{label}</h4>
+            {children}
+        </div>
+    )
+}
+
+// FilterChip Sub-component 
+function FilterChip({ label, isActive, onClick }: { label: string; isActive: boolean; onClick: () => void }) {
+    return (
+        <button
+            onClick={onClick}
+            className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border",
+                isActive
+                    ? "bg-[#2BD67C]/10 text-[#2BD67C] border-[#2BD67C]/30 shadow-sm"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100"
+            )}
+        >
+            {label}
+        </button>
+    )
+}
+
 export function OrdersFilter({ className, filters, onApply, onReset }: OrdersFilterProps) {
     const [localFilters, setLocalFilters] = React.useState<FilterState>(filters)
     const [open, setOpen] = React.useState(false)
+    const [amountRange, setAmountRange] = React.useState<[number, number]>([
+        filters.minAmount ? parseInt(filters.minAmount) : 0,
+        filters.maxAmount ? parseInt(filters.maxAmount) : 10000
+    ])
 
     // Sync when external filters change
     React.useEffect(() => {
         setLocalFilters(filters)
+        setAmountRange([
+            filters.minAmount ? parseInt(filters.minAmount) : 0,
+            filters.maxAmount ? parseInt(filters.maxAmount) : 10000
+        ])
     }, [filters])
 
     const handleApply = () => {
-        onApply(localFilters)
+        onApply({
+            ...localFilters,
+            minAmount: amountRange[0] > 0 ? amountRange[0].toString() : "",
+            maxAmount: amountRange[1] < 10000 ? amountRange[1].toString() : ""
+        })
         setOpen(false)
     }
 
     const handleReset = () => {
         setLocalFilters(INITIAL_FILTERS)
+        setAmountRange([0, 10000])
         onReset()
         setOpen(false)
     }
@@ -82,8 +115,7 @@ export function OrdersFilter({ className, filters, onApply, onReset }: OrdersFil
     const activeFilterCount = React.useMemo(() => {
         let count = 0
         if (filters.status.length > 0) count++
-        if (filters.minAmount) count++
-        if (filters.maxAmount) count++
+        if (filters.minAmount || filters.maxAmount) count++
         if (filters.customerName) count++
         if (filters.storeName) count++
         return count
@@ -94,126 +126,125 @@ export function OrdersFilter({ className, filters, onApply, onReset }: OrdersFil
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="outline" className="gap-2 border-slate-200">
-                    <Filter className="h-4 w-4 text-slate-500" />
+                <Button
+                    variant="outline"
+                    className={cn(
+                        "gap-2 border-slate-200 hover:border-[#2BD67C]/50 hover:bg-[#2BD67C]/5 transition-all",
+                        activeFilterCount > 0 && "border-[#2BD67C]/30 bg-[#2BD67C]/5",
+                        className
+                    )}
+                >
+                    <SlidersHorizontal className="h-4 w-4" />
                     Filters
                     {activeFilterCount > 0 && (
-                        <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1 bg-[#2BD67C] text-white">
+                        <Badge className="bg-[#2BD67C] text-white text-[10px] h-5 px-1.5 min-w-[20px] flex items-center justify-center">
                             {activeFilterCount}
                         </Badge>
                     )}
                 </Button>
             </SheetTrigger>
-            <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
-                <SheetHeader>
-                    <SheetTitle>Filter Orders</SheetTitle>
-                    <SheetDescription>
-                        Refine your order list using detailed parameters.
-                    </SheetDescription>
+
+            <SheetContent side="right" className="w-[340px] sm:w-[400px] p-0 flex flex-col">
+                {/* Header */}
+                <SheetHeader className="px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-10">
+                    <div className="flex items-center justify-between">
+                        <SheetTitle className="text-lg font-bold text-slate-900">Filter Orders</SheetTitle>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleReset}
+                            className="h-8 px-2 text-xs text-slate-500 hover:text-slate-700 gap-1"
+                        >
+                            <RotateCcw className="h-3 w-3" />
+                            Reset
+                        </Button>
+                    </div>
                 </SheetHeader>
 
-                <div className="flex flex-col gap-8 py-8 px-1">
+                {/* Scrollable Body */}
+                <div className="flex-1 overflow-y-auto px-6 py-4">
                     {/* Order Status */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <Label className="text-base font-semibold text-slate-900">Order Status</Label>
-                            {localFilters.status.length > 0 && (
-                                <Badge variant="secondary" className="px-2 py-0.5 h-6 text-xs font-medium">
-                                    {localFilters.status.length} selected
-                                </Badge>
-                            )}
+                    <FilterSection label="Order Status">
+                        <div className="flex flex-wrap gap-2">
+                            {statuses.map(status => (
+                                <FilterChip
+                                    key={status}
+                                    label={status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                                    isActive={localFilters.status.includes(status)}
+                                    onClick={() => toggleStatus(status)}
+                                />
+                            ))}
                         </div>
-                        <div className="flex flex-wrap gap-2.5">
-                            {statuses.map(status => {
-                                const isSelected = localFilters.status.includes(status)
-                                return (
-                                    <div
-                                        key={status}
-                                        onClick={() => toggleStatus(status)}
-                                        className={`
-                                            cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border select-none
-                                            ${isSelected
-                                                ? "bg-slate-900 text-white border-slate-900 shadow-sm ring-1 ring-slate-900"
-                                                : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                                            }
-                                        `}
-                                    >
-                                        {status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </div>
+                        {localFilters.status.length > 0 && (
+                            <p className="text-[10px] text-[#2BD67C] mt-2 font-medium">
+                                {localFilters.status.length} selected
+                            </p>
+                        )}
+                    </FilterSection>
 
-                    <Separator className="bg-slate-100" />
-
-                    {/* Amount Range */}
-                    <div className="space-y-4">
-                        <Label className="text-base font-semibold text-slate-900">Order Amount</Label>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="min-amount" className="text-xs font-medium text-slate-500 uppercase tracking-wider">Minimum</Label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">₹</span>
-                                    <Input
-                                        id="min-amount"
-                                        type="number"
-                                        placeholder="0"
-                                        className="pl-8 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                                        value={localFilters.minAmount}
-                                        onChange={(e) => setLocalFilters({ ...localFilters, minAmount: e.target.value })}
-                                    />
-                                </div>
+                    {/* Amount Range Slider */}
+                    <FilterSection label="Order Amount">
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-slate-500">Range</span>
+                                <span className="text-xs font-bold text-slate-700">
+                                    ₹{amountRange[0].toLocaleString('en-IN')} - ₹{amountRange[1].toLocaleString('en-IN')}
+                                </span>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="max-amount" className="text-xs font-medium text-slate-500 uppercase tracking-wider">Maximum</Label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">₹</span>
-                                    <Input
-                                        id="max-amount"
-                                        type="number"
-                                        placeholder="10,000+"
-                                        className="pl-8 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                                        value={localFilters.maxAmount}
-                                        onChange={(e) => setLocalFilters({ ...localFilters, maxAmount: e.target.value })}
-                                    />
-                                </div>
+                            <Slider
+                                min={0}
+                                max={10000}
+                                step={100}
+                                value={amountRange}
+                                onValueChange={(val) => setAmountRange(val as [number, number])}
+                                className="[&_[role=slider]]:bg-[#2BD67C] [&_[role=slider]]:border-[#2BD67C] [&_.bg-primary]:bg-[#2BD67C]"
+                            />
+                            <div className="flex items-center justify-between text-[10px] text-slate-400">
+                                <span>₹0</span>
+                                <span>₹10,000</span>
                             </div>
                         </div>
-                    </div>
+                    </FilterSection>
 
-                    <Separator className="bg-slate-100" />
+                    {/* Store Name */}
+                    <FilterSection label="Store Name">
+                        <Input
+                            placeholder="Search by store name..."
+                            className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                            value={localFilters.storeName}
+                            onChange={(e) => setLocalFilters({ ...localFilters, storeName: e.target.value })}
+                        />
+                    </FilterSection>
 
-                    {/* Specific Search */}
-                    <div className="space-y-6">
-                        <div className="space-y-3">
-                            <Label className="text-base font-semibold text-slate-900">Store Name</Label>
-                            <Input
-                                placeholder="Search by store name..."
-                                className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                                value={localFilters.storeName}
-                                onChange={(e) => setLocalFilters({ ...localFilters, storeName: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-3">
-                            <Label className="text-base font-semibold text-slate-900">Customer Name</Label>
-                            <Input
-                                placeholder="Search by customer name..."
-                                className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                                value={localFilters.customerName}
-                                onChange={(e) => setLocalFilters({ ...localFilters, customerName: e.target.value })}
-                            />
-                        </div>
-                    </div>
+                    {/* Customer Name */}
+                    <FilterSection label="Customer Name">
+                        <Input
+                            placeholder="Search by customer name..."
+                            className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                            value={localFilters.customerName}
+                            onChange={(e) => setLocalFilters({ ...localFilters, customerName: e.target.value })}
+                        />
+                    </FilterSection>
                 </div>
 
-                <SheetFooter className="flex-col sm:flex-row gap-2 mt-auto border-t pt-4">
-                    <Button variant="outline" onClick={handleReset} className="w-full sm:w-auto">
-                        Reset All
-                    </Button>
-                    <Button onClick={handleApply} className="w-full sm:w-auto bg-[#2BD67C] hover:bg-[#25bf42] text-white">
-                        Apply Filters
-                    </Button>
+                {/* Fixed Footer */}
+                <SheetFooter className="px-6 py-4 border-t border-slate-100 bg-white sticky bottom-0 z-10">
+                    <div className="flex gap-3 w-full">
+                        <SheetClose asChild>
+                            <Button
+                                variant="outline"
+                                className="flex-1 border-slate-200 hover:bg-slate-50"
+                            >
+                                Cancel
+                            </Button>
+                        </SheetClose>
+                        <Button
+                            onClick={handleApply}
+                            className="flex-1 bg-[#278F27] hover:bg-[#278F27]/90 text-white font-semibold"
+                        >
+                            Apply Filters
+                        </Button>
+                    </div>
                 </SheetFooter>
             </SheetContent>
         </Sheet>

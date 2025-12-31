@@ -489,6 +489,7 @@ interface MockDataContextType {
     rejectProduct: (id: string, reason: string) => void
     markStoreFeedbackSeen: (id: string, seen: boolean) => void
     markRiderFeedbackSeen: (id: string, seen: boolean) => void
+    updateUserStatus: (id: string, status: User['status']) => void
 }
 
 const MockDataContext = React.createContext<MockDataContextType | undefined>(undefined)
@@ -804,6 +805,12 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('bazuroo_rider_feedbacks', JSON.stringify(updated))
     }
 
+    const updateUserStatus = (id: string, status: User['status']) => {
+        const updated = users.map(u => u.id === id ? { ...u, status } : u)
+        setUsers(updated)
+        localStorage.setItem('bazuroo_users', JSON.stringify(updated))
+    }
+
     return (
         <MockDataContext.Provider value={{
             merchants,
@@ -841,7 +848,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
             approveProduct,
             rejectProduct,
             markStoreFeedbackSeen,
-            markRiderFeedbackSeen
+            markRiderFeedbackSeen,
+            updateUserStatus
         }}>
             {children}
         </MockDataContext.Provider>

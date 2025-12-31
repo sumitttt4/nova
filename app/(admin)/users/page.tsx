@@ -16,7 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, MoreHorizontal, Filter } from "lucide-react"
+import { Search, MoreHorizontal } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -26,16 +26,34 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import { TableSkeleton } from "@/components/ui/table-skeleton"
+import { UsersFilter, UserFilterState, INITIAL_USER_FILTERS } from "@/components/users/users-filter"
 
 export default function UsersPage() {
     const router = useRouter()
     const { users, isLoading } = useMockData()
     const [searchTerm, setSearchTerm] = React.useState("")
+    const [filters, setFilters] = React.useState<UserFilterState>(INITIAL_USER_FILTERS)
 
-    const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const handleFilterReset = () => {
+        setFilters(INITIAL_USER_FILTERS)
+    }
+
+    const filteredUsers = users.filter(user => {
+        // Search filter
+        const matchesSearch =
+            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+
+        // Status filter
+        const matchesStatus = filters.status.length === 0 || filters.status.includes(user.status)
+
+        // Balance filter
+        const matchesBalance =
+            user.walletBalance >= filters.minBalance &&
+            user.walletBalance <= filters.maxBalance
+
+        return matchesSearch && matchesStatus && matchesBalance
+    })
 
     if (isLoading) {
         return (
@@ -61,7 +79,7 @@ export default function UsersPage() {
                     </p>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <Button>Export Users</Button>
+                    <Button onClick={() => alert("Export functionality will be available in production.")}>Export Users</Button>
                 </div>
             </div>
 
@@ -76,9 +94,11 @@ export default function UsersPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button variant="outline" size="icon">
-                    <Filter className="h-4 w-4" />
-                </Button>
+                <UsersFilter
+                    filters={filters}
+                    onApply={setFilters}
+                    onReset={handleFilterReset}
+                />
             </div>
 
             <div className="rounded-md border bg-card text-card-foreground shadow-sm">
@@ -95,67 +115,75 @@ export default function UsersPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredUsers.map((user) => (
-                            <TableRow key={user.id} className="cursor-pointer hover:bg-slate-50" onClick={() => router.push(`/users/${user.id}`)}>
-                                <TableCell onClick={(e) => e.stopPropagation()}>
-                                    <Avatar className="h-9 w-9">
-                                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt={user.name} />
-                                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col">
-                                        <span className="font-medium">{user.name}</span>
-                                        <span className="text-xs text-muted-foreground">{user.email}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-muted-foreground">
-                                    {user.phone}
-                                </TableCell>
-                                <TableCell>
-                                    <Badge
-                                        variant={
-                                            user.status === "active"
-                                                ? "default"
-                                                : user.status === "warned"
-                                                    ? "secondary"
-                                                    : "destructive"
-                                        }
-                                        className={
-                                            user.status === "active"
-                                                ? "bg-green-100 text-green-700"
-                                                : user.status === "warned"
-                                                    ? "bg-yellow-100 text-yellow-700"
-                                                    : "bg-red-100 text-red-700"
-                                        }
-                                    >
-                                        {user.status.toUpperCase()}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>{format(new Date(user.joinedAt), "PP")}</TableCell>
-                                <TableCell className="text-right font-medium">₹{user.walletBalance}</TableCell>
-                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                <span className="sr-only">Open menu</span>
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
-                                                Copy ID
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => router.push(`/users/${user.id}`)}>
-                                                View details
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem className="text-red-600">Ban user</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                        {filteredUsers.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={7} className="h-24 text-center text-slate-500">
+                                    No users found matching your filters.
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        ) : (
+                            filteredUsers.map((user) => (
+                                <TableRow key={user.id} className="cursor-pointer hover:bg-slate-50" onClick={() => router.push(`/users/${user.id}`)}>
+                                    <TableCell onClick={(e) => e.stopPropagation()}>
+                                        <Avatar className="h-9 w-9">
+                                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt={user.name} />
+                                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">{user.name}</span>
+                                            <span className="text-xs text-muted-foreground">{user.email}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground">
+                                        {user.phone}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={
+                                                user.status === "active"
+                                                    ? "default"
+                                                    : user.status === "warned"
+                                                        ? "secondary"
+                                                        : "destructive"
+                                            }
+                                            className={
+                                                user.status === "active"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : user.status === "warned"
+                                                        ? "bg-yellow-100 text-yellow-700"
+                                                        : "bg-red-100 text-red-700"
+                                            }
+                                        >
+                                            {user.status.toUpperCase()}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>{format(new Date(user.joinedAt), "PP")}</TableCell>
+                                    <TableCell className="text-right font-medium">₹{user.walletBalance}</TableCell>
+                                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                    <span className="sr-only">Open menu</span>
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
+                                                    Copy ID
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => router.push(`/users/${user.id}`)}>
+                                                    View details
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem className="text-red-600" onClick={() => alert(`Ban functionality for ${user.name} will be available in production.`)}>Ban user</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
                     </TableBody>
                 </Table>
             </div>

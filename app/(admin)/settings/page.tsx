@@ -58,7 +58,7 @@ export default function SettingsPage() {
                             <h2 className="text-lg font-semibold tracking-tight">Customer Application</h2>
                             <p className="text-sm text-slate-500">Configure settings for the main Play Store / App Store customer app.</p>
                         </div>
-                        <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                        <span suppressHydrationWarning className="text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                             Last update: {appSettings.user_app ? new Date(appSettings.user_app.updatedAt).toLocaleDateString() : 'N/A'}
                         </span>
                     </div>
@@ -72,7 +72,7 @@ export default function SettingsPage() {
                             <h2 className="text-lg font-semibold tracking-tight">Merchant Dashboard App</h2>
                             <p className="text-sm text-slate-500">Settings for the business partner application.</p>
                         </div>
-                        <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                        <span suppressHydrationWarning className="text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                             Last update: {appSettings.store_app ? new Date(appSettings.store_app.updatedAt).toLocaleDateString() : 'N/A'}
                         </span>
                     </div>
@@ -86,7 +86,7 @@ export default function SettingsPage() {
                             <h2 className="text-lg font-semibold tracking-tight">Delivery Partner App</h2>
                             <p className="text-sm text-slate-500">Configuration for the logistics and rider fleet app.</p>
                         </div>
-                        <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                        <span suppressHydrationWarning className="text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                             Last update: {appSettings.rider_app ? new Date(appSettings.rider_app.updatedAt).toLocaleDateString() : 'N/A'}
                         </span>
                     </div>

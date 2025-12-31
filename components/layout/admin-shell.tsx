@@ -16,7 +16,8 @@ import {
     FileText,
     Calculator,
     UserCircle,
-    Menu
+    Menu,
+    Store
 } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
@@ -28,6 +29,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DialogTitle } from "@/components/ui/dialog"
+import { useMockData } from "@/contexts/MockDataContext"
+import { Badge } from "@/components/ui/badge"
 import {
     CommandDialog,
     CommandEmpty,
@@ -42,6 +45,7 @@ import { useStore } from "@/lib/store"
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
     const { notifications } = useStore()
+    const { merchants, riders, users } = useMockData()
     const router = useRouter()
     const [isSearchOpen, setIsSearchOpen] = React.useState(false)
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false)
@@ -160,50 +164,230 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             {/* Global Command Dialog */}
             <CommandDialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
                 <DialogTitle className="sr-only">Command Menu</DialogTitle>
-                <CommandInput placeholder="Type a command or search..." />
+                <CommandInput placeholder="Search metrics, people, stores, or actions..." />
                 <CommandList>
-                    <CommandEmpty>No results found.</CommandEmpty>
+                    <CommandEmpty className="py-6 text-center text-sm">
+                        <p className="text-slate-500 mb-4">No results found.</p>
+                        <Button
+                            className="bg-[#2BD67C] hover:bg-[#2BD67C]/90 text-black font-semibold h-9 px-4 rounded-lg shadow-sm"
+                            onClick={() => runCommand(() => router.push('/stores/new'))}
+                        >
+                            <span className="mr-2">+</span> Add New Store
+                        </Button>
+                    </CommandEmpty>
 
-                    <CommandGroup heading="Navigation">
-                        <CommandItem onSelect={() => runCommand(() => router.push('/dashboard'))}>
-                            <Home className="mr-2 h-4 w-4" />
-                            <span>Dashboard</span>
+                    {/* DASHBOARD METRICS */}
+                    <CommandGroup heading="Dashboard Metrics">
+                        <CommandItem
+                            value="pending orders live active queue processing"
+                            onSelect={() => runCommand(() => router.push('/orders'))}
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                    <ShoppingBag className="mr-2 h-4 w-4 text-amber-500" />
+                                    <span>Pending Orders</span>
+                                </div>
+                                <span className="text-xs text-slate-400">→ Orders</span>
+                            </div>
                         </CommandItem>
-                        <CommandItem onSelect={() => runCommand(() => router.push('/orders'))}>
-                            <ShoppingBag className="mr-2 h-4 w-4" />
-                            <span>All Orders</span>
+                        <CommandItem
+                            value="revenue today earnings income money sales daily"
+                            onSelect={() => runCommand(() => router.push('/finance'))}
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                    <CreditCard className="mr-2 h-4 w-4 text-green-500" />
+                                    <span>Revenue Today</span>
+                                </div>
+                                <span className="text-xs text-slate-400">→ Finance</span>
+                            </div>
                         </CommandItem>
-                        <CommandItem onSelect={() => runCommand(() => router.push('/riders/list'))}>
-                            <Bike className="mr-2 h-4 w-4" />
-                            <span>Delivery Partners</span>
+                        <CommandItem
+                            value="total payment received revenue income money earnings"
+                            onSelect={() => runCommand(() => router.push('/finance'))}
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                    <CreditCard className="mr-2 h-4 w-4 text-green-500" />
+                                    <span>Total Payment Received</span>
+                                </div>
+                                <span className="text-xs text-slate-400">→ Finance</span>
+                            </div>
                         </CommandItem>
-                        <CommandItem onSelect={() => runCommand(() => router.push('/merchants/list'))}>
-                            <Users className="mr-2 h-4 w-4" />
-                            <span>Merchants</span>
+                        <CommandItem
+                            value="cod cash delivery riders pending collection"
+                            onSelect={() => runCommand(() => router.push('/riders'))}
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                    <Bike className="mr-2 h-4 w-4 text-orange-500" />
+                                    <span>COD with Riders</span>
+                                </div>
+                                <span className="text-xs text-slate-400">→ Riders</span>
+                            </div>
+                        </CommandItem>
+                        <CommandItem
+                            value="active riders delivery partners online available"
+                            onSelect={() => runCommand(() => router.push('/riders/list'))}
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                    <Bike className="mr-2 h-4 w-4 text-blue-500" />
+                                    <span>Active Riders</span>
+                                </div>
+                                <span className="text-xs text-slate-400">→ Riders</span>
+                            </div>
+                        </CommandItem>
+                        <CommandItem
+                            value="active stores merchants shops live open"
+                            onSelect={() => runCommand(() => router.push('/stores'))}
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                    <Store className="mr-2 h-4 w-4 text-purple-500" />
+                                    <span>Active Stores</span>
+                                </div>
+                                <span className="text-xs text-slate-400">→ Stores</span>
+                            </div>
+                        </CommandItem>
+                        <CommandItem
+                            value="delivered orders completed success done"
+                            onSelect={() => runCommand(() => router.push('/orders'))}
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                    <ShoppingBag className="mr-2 h-4 w-4 text-green-500" />
+                                    <span>Delivered Orders</span>
+                                </div>
+                                <span className="text-xs text-slate-400">→ Orders</span>
+                            </div>
+                        </CommandItem>
+                        <CommandItem
+                            value="cancelled orders failed rejected refund"
+                            onSelect={() => runCommand(() => router.push('/orders'))}
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                    <ShoppingBag className="mr-2 h-4 w-4 text-red-500" />
+                                    <span>Cancelled Orders</span>
+                                </div>
+                                <span className="text-xs text-slate-400">→ Orders</span>
+                            </div>
+                        </CommandItem>
+                        <CommandItem
+                            value="total users customers registered accounts"
+                            onSelect={() => runCommand(() => router.push('/users'))}
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                    <Users className="mr-2 h-4 w-4 text-indigo-500" />
+                                    <span>Total Users</span>
+                                </div>
+                                <span className="text-xs text-slate-400">→ Users</span>
+                            </div>
+                        </CommandItem>
+                        <CommandItem
+                            value="payouts settlements disbursements transfer merchant payment"
+                            onSelect={() => runCommand(() => router.push('/finance/payouts'))}
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                    <CreditCard className="mr-2 h-4 w-4 text-teal-500" />
+                                    <span>Payouts</span>
+                                </div>
+                                <span className="text-xs text-slate-400">→ Finance</span>
+                            </div>
                         </CommandItem>
                     </CommandGroup>
 
                     <CommandSeparator />
 
-                    <CommandGroup heading="Quick Actions">
-                        <CommandItem onSelect={() => runCommand(() => router.push('/finance/payouts'))}>
+                    {/* PEOPLE: Users + Riders */}
+                    <CommandGroup heading="People">
+                        {users.slice(0, 3).map(user => (
+                            <CommandItem key={user.id} value={`${user.name} user customer`} onSelect={() => runCommand(() => router.push(`/users/${user.id}`))}>
+                                <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center">
+                                        <UserCircle className="mr-2 h-4 w-4 text-slate-500" />
+                                        <span>{user.name}</span>
+                                    </div>
+                                    {user.status === 'banned' ? (
+                                        <Badge variant="outline" className="bg-[#FBC02D]/10 text-[#FBC02D] border-[#FBC02D]/20 text-[10px] h-5 px-1.5">
+                                            Banned
+                                        </Badge>
+                                    ) : user.status === 'warned' ? (
+                                        <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 text-[10px] h-5 px-1.5">
+                                            Warned
+                                        </Badge>
+                                    ) : (
+                                        <span className="text-[10px] text-slate-400">{user.status}</span>
+                                    )}
+                                </div>
+                            </CommandItem>
+                        ))}
+                        {riders.slice(0, 3).map(rider => (
+                            <CommandItem key={rider.id} value={`${rider.name} rider delivery partner`} onSelect={() => runCommand(() => router.push(`/riders/${rider.id}`))}>
+                                <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center">
+                                        <Bike className="mr-2 h-4 w-4 text-slate-500" />
+                                        <span>{rider.name}</span>
+                                    </div>
+                                    {rider.status === 'blocked' ? (
+                                        <Badge variant="outline" className="bg-[#FBC02D]/10 text-[#FBC02D] border-[#FBC02D]/20 text-[10px] h-5 px-1.5">
+                                            Banned
+                                        </Badge>
+                                    ) : (
+                                        <span className="text-[10px] text-slate-400">{rider.status}</span>
+                                    )}
+                                </div>
+                            </CommandItem>
+                        ))}
+                    </CommandGroup>
+
+                    <CommandSeparator />
+
+                    {/* STORES: Merchants */}
+                    <CommandGroup heading="Stores">
+                        {merchants.slice(0, 5).map(merchant => (
+                            <CommandItem key={merchant.id} value={`${merchant.storeName} store merchant shop`} onSelect={() => runCommand(() => router.push(`/merchants/${merchant.id}`))}>
+                                <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center">
+                                        <Store className="mr-2 h-4 w-4 text-slate-500" />
+                                        <span>{merchant.storeName}</span>
+                                    </div>
+                                    {merchant.flags.blocked ? (
+                                        <Badge variant="outline" className="bg-[#FBC02D]/10 text-[#FBC02D] border-[#FBC02D]/20 text-[10px] h-5 px-1.5">
+                                            Blocked
+                                        </Badge>
+                                    ) : (
+                                        <span className="text-[10px] text-slate-400">{merchant.status}</span>
+                                    )}
+                                </div>
+                            </CommandItem>
+                        ))}
+                    </CommandGroup>
+
+                    <CommandSeparator />
+
+                    {/* SYSTEM ACTIONS */}
+                    <CommandGroup heading="System Actions">
+                        <CommandItem value="dashboard home overview main" onSelect={() => runCommand(() => router.push('/dashboard'))}>
+                            <Home className="mr-2 h-4 w-4" />
+                            <span>Go to Dashboard</span>
+                        </CommandItem>
+                        <CommandItem value="orders purchases transactions all" onSelect={() => runCommand(() => router.push('/orders'))}>
+                            <ShoppingBag className="mr-2 h-4 w-4" />
+                            <span>View All Orders</span>
+                        </CommandItem>
+                        <CommandItem value="process payouts settlements pay merchants" onSelect={() => runCommand(() => router.push('/finance/payouts'))}>
                             <CreditCard className="mr-2 h-4 w-4" />
                             <span>Process Payouts</span>
                         </CommandItem>
-                        <CommandItem onSelect={() => runCommand(() => router.push('/orders/issues'))}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            <span>View Issues</span>
+                        <CommandItem value="add new store create merchant" onSelect={() => runCommand(() => router.push('/stores/new'))}>
+                            <Store className="mr-2 h-4 w-4" />
+                            <span>Add New Store</span>
                         </CommandItem>
-                    </CommandGroup>
-
-                    <CommandSeparator />
-
-                    <CommandGroup heading="Settings">
-                        <CommandItem onSelect={() => runCommand(() => router.push('/settings/profile'))}>
-                            <UserCircle className="mr-2 h-4 w-4" />
-                            <span>Profile</span>
-                        </CommandItem>
-                        <CommandItem onSelect={() => runCommand(() => router.push('/settings'))}>
+                        <CommandItem value="settings config configuration preferences" onSelect={() => runCommand(() => router.push('/settings'))}>
                             <Settings className="mr-2 h-4 w-4" />
                             <span>Settings</span>
                             <CommandShortcut>⌘S</CommandShortcut>
