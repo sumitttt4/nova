@@ -38,7 +38,7 @@ export default function MerchantsPage() {
     const filteredMerchants = merchants.filter(merchant =>
         merchant.storeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         merchant.personName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        merchant.location.toLowerCase().includes(searchTerm.toLowerCase())
+        merchant.location?.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
     return (

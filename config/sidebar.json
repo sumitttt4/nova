@@ -108,6 +108,11 @@
                 "icon": "Bike"
             },
             {
+                "title": "KYC Review",
+                "href": "/riders/kyc",
+                "icon": "FileCheck"
+            },
+            {
                 "title": "Rider performance",
                 "href": "/riders/stats",
                 "icon": "BarChart3"

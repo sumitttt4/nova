@@ -152,7 +152,10 @@ export default function FeedbackPage() {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredFeedbacks.map((feedback) => (
-                    <Card key={feedback.id} className={`transition-all ${!feedback.isSeen ? 'border-l-4 border-l-blue-500 shadow-sm' : 'opacity-80'}`}>
+                    <Card key={feedback.id} className={`transition-all border-l-4 ${feedback.sentiment === 'positive' ? 'border-l-green-500' :
+                            feedback.sentiment === 'negative' ? 'border-l-red-500' :
+                                'border-l-slate-300'
+                        } ${!feedback.isSeen ? 'shadow-md' : 'opacity-80'}`}>
                         <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
                             <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center">

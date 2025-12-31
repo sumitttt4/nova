@@ -95,94 +95,151 @@ function SettlementDetailsSheet({ settlement }: { settlement: Settlement }) {
                     <Eye className="h-4 w-4 mr-2" /> View
                 </Button>
             </SheetTrigger>
-            <SheetContent className="w-[400px] sm:w-[540px]">
-                <SheetHeader className="mb-6">
-                    <SheetTitle>Settlement Details</SheetTitle>
-                    <SheetDescription>
-                        Breakdown for {settlement.id}
-                    </SheetDescription>
-                </SheetHeader>
+            <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-0">
+                <div className="flex flex-col h-full bg-[#FAFAFA]">
+                    {/* Header */}
+                    <div className="p-6 border-b bg-white sticky top-0 z-10 shadow-sm">
+                        <SheetTitle className="text-lg font-bold">Settlement Details</SheetTitle>
+                        <SheetDescription className="mt-1">
+                            Breakdown for {settlement.id}
+                        </SheetDescription>
+                    </div>
 
-                <ScrollArea className="h-[80vh] pr-4">
-                    <div className="space-y-6">
+                    {/* Content */}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
                         {/* Header Box */}
-                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 flex items-center justify-between">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
                             <div>
-                                <p className="text-xs text-slate-500 uppercase">Total Payable</p>
-                                <p className="text-2xl font-bold text-slate-900">₹{settlement.netAmount.toLocaleString()}</p>
+                                <p className="text-xs text-slate-500 uppercase font-medium tracking-wider">Total Payable</p>
+                                <p className="text-3xl font-bold text-slate-900 mt-1">₹{settlement.netAmount.toLocaleString()}</p>
                             </div>
-                            <Badge>{settlement.status}</Badge>
+                            <Badge className={
+                                settlement.status === 'processed' ? 'bg-green-100 text-green-700 border-green-200' :
+                                    settlement.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                                        'bg-red-100 text-red-700 border-red-200'
+                            }>
+                                {settlement.status}
+                            </Badge>
                         </div>
 
                         {/* Recipient Info */}
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <p className="text-slate-500">Recipient</p>
-                                <p className="font-medium">{settlement.recipientName}</p>
-                            </div>
-                            <div>
-                                <p className="text-slate-500">Type</p>
-                                <p className="font-medium capitalize">{settlement.type}</p>
-                            </div>
-                            <div>
-                                <p className="text-slate-500">Period Start</p>
-                                <p className="font-medium">{format(new Date(settlement.periodStart), 'dd MMM yyyy')}</p>
-                            </div>
-                            <div>
-                                <p className="text-slate-500">Period End</p>
-                                <p className="font-medium">{format(new Date(settlement.periodEnd), 'dd MMM yyyy')}</p>
-                            </div>
-                            {settlement.transactionReference && (
-                                <div className="col-span-2">
-                                    <p className="text-slate-500">Reference ID</p>
-                                    <p className="font-mono text-xs bg-slate-100 p-1 rounded inline-block">
-                                        {settlement.transactionReference}
-                                    </p>
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Recipient Info</h4>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p className="text-slate-400 text-xs">Recipient</p>
+                                    <p className="font-semibold text-slate-900 mt-0.5">{settlement.recipientName}</p>
                                 </div>
-                            )}
-                        </div>
-
-                        <div className="h-px bg-slate-100" />
-
-                        {/* Financial Breakdown Table */}
-                        <div className="space-y-3">
-                            <h4 className="text-sm font-semibold">Financial Breakdown</h4>
-
-                            <div className="flex justify-between text-sm py-2 border-b border-dashed border-slate-200">
-                                <span className="text-slate-600">Gross Sales / Earnings</span>
-                                <span className="font-medium">₹{settlement.breakdown.grossAmount.toLocaleString()}</span>
-                            </div>
-
-                            <div className="flex justify-between text-sm py-2 border-b border-dashed border-slate-200 text-red-600">
-                                <span>Platform Commission</span>
-                                <span>- ₹{settlement.breakdown.commission.toLocaleString()}</span>
-                            </div>
-
-                            <div className="flex justify-between text-sm py-2 border-b border-dashed border-slate-200 text-red-600">
-                                <span>Tax (TDS/GST)</span>
-                                <span>- ₹{settlement.breakdown.tax.toLocaleString()}</span>
-                            </div>
-
-                            <div className="flex justify-between text-sm py-2 border-b border-dashed border-slate-200">
-                                <span className="text-slate-600">Adjustments (Refunds/Bonus)</span>
-                                <span className={settlement.breakdown.adjustments >= 0 ? "text-green-600" : "text-red-600"}>
-                                    {settlement.breakdown.adjustments >= 0 ? '+' : ''} ₹{settlement.breakdown.adjustments.toLocaleString()}
-                                </span>
-                            </div>
-
-                            <div className="flex justify-between text-base font-bold pt-2 mt-2 bg-slate-50 p-3 rounded">
-                                <span>Net Settlement Amount</span>
-                                <span>₹{settlement.netAmount.toLocaleString()}</span>
+                                <div>
+                                    <p className="text-slate-400 text-xs">Type</p>
+                                    <p className="font-semibold text-slate-900 capitalize mt-0.5">{settlement.type}</p>
+                                </div>
+                                <div>
+                                    <p className="text-slate-400 text-xs">Period Start</p>
+                                    <p className="font-semibold text-slate-900 mt-0.5">{format(new Date(settlement.periodStart), 'dd MMM yyyy')}</p>
+                                </div>
+                                <div>
+                                    <p className="text-slate-400 text-xs">Period End</p>
+                                    <p className="font-semibold text-slate-900 mt-0.5">{format(new Date(settlement.periodEnd), 'dd MMM yyyy')}</p>
+                                </div>
+                                {settlement.transactionReference && (
+                                    <div className="col-span-2">
+                                        <p className="text-slate-400 text-xs">Reference ID</p>
+                                        <p className="font-mono text-xs bg-slate-100 p-2 rounded inline-block mt-1">
+                                            {settlement.transactionReference}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        <div className="pt-6">
-                            <Button className="w-full gap-2" variant="outline">
-                                <Download className="h-4 w-4" /> Download PDF Statement
-                            </Button>
+                        {/* Financial Breakdown */}
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Financial Breakdown</h4>
+
+                            <div className="space-y-3">
+                                <div className="flex justify-between text-sm py-2 border-b border-dashed border-slate-200">
+                                    <span className="text-slate-600">Gross Sales / Earnings</span>
+                                    <span className="font-semibold text-slate-900">₹{settlement.breakdown.grossAmount.toLocaleString()}</span>
+                                </div>
+
+                                <div className="flex justify-between text-sm py-2 border-b border-dashed border-slate-200 text-red-600">
+                                    <span>Platform Commission</span>
+                                    <span className="font-semibold">- ₹{settlement.breakdown.commission.toLocaleString()}</span>
+                                </div>
+
+                                <div className="flex justify-between text-sm py-2 border-b border-dashed border-slate-200 text-red-600">
+                                    <span>Tax (TDS/GST)</span>
+                                    <span className="font-semibold">- ₹{settlement.breakdown.tax.toLocaleString()}</span>
+                                </div>
+
+                                <div className="flex justify-between text-sm py-2 border-b border-dashed border-slate-200">
+                                    <span className="text-slate-600">Adjustments (Refunds/Bonus)</span>
+                                    <span className={`font-semibold ${settlement.breakdown.adjustments >= 0 ? "text-green-600" : "text-red-600"}`}>
+                                        {settlement.breakdown.adjustments >= 0 ? '+' : ''} ₹{settlement.breakdown.adjustments.toLocaleString()}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between text-base font-bold pt-4 mt-2 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                                    <span>Net Settlement Amount</span>
+                                    <span className="text-[#2BD67C]">₹{settlement.netAmount.toLocaleString()}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </ScrollArea>
+
+                    {/* Footer */}
+                    <div className="p-4 bg-white border-t shadow-[0_-4px_24px_rgba(0,0,0,0.05)]">
+                        <Button
+                            className="w-full gap-2 h-12 font-semibold"
+                            variant="outline"
+                            onClick={() => {
+                                // Create settlement statement content
+                                const content = `
+SETTLEMENT STATEMENT
+====================
+
+Settlement ID: ${settlement.id}
+Generated: ${new Date().toLocaleString()}
+
+RECIPIENT INFORMATION
+---------------------
+Name: ${settlement.recipientName}
+Type: ${settlement.type}
+Period: ${new Date(settlement.periodStart).toLocaleDateString()} - ${new Date(settlement.periodEnd).toLocaleDateString()}
+${settlement.transactionReference ? `Reference: ${settlement.transactionReference}` : ''}
+
+FINANCIAL BREAKDOWN
+-------------------
+Gross Sales/Earnings:    ₹${settlement.breakdown.grossAmount.toLocaleString()}
+Platform Commission:     -₹${settlement.breakdown.commission.toLocaleString()}
+Tax (TDS/GST):           -₹${settlement.breakdown.tax.toLocaleString()}
+Adjustments:             ${settlement.breakdown.adjustments >= 0 ? '+' : ''}₹${settlement.breakdown.adjustments.toLocaleString()}
+
+---------------------
+NET SETTLEMENT:          ₹${settlement.netAmount.toLocaleString()}
+STATUS:                  ${settlement.status.toUpperCase()}
+
+====================
+This is a system-generated statement from Bazuroo Admin Panel.
+                                `.trim()
+
+                                // Create blob and download
+                                const blob = new Blob([content], { type: 'text/plain' })
+                                const url = URL.createObjectURL(blob)
+                                const a = document.createElement('a')
+                                a.href = url
+                                a.download = `settlement_${settlement.id}_${new Date().toISOString().split('T')[0]}.txt`
+                                document.body.appendChild(a)
+                                a.click()
+                                document.body.removeChild(a)
+                                URL.revokeObjectURL(url)
+                            }}
+                        >
+                            <Download className="h-4 w-4" /> Download PDF Statement
+                        </Button>
+                    </div>
+                </div>
             </SheetContent>
         </Sheet>
     )

@@ -515,7 +515,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     const [riderReviews, setRiderReviews] = React.useState<RiderReview[]>([])
     const [riderFeedbacks, setRiderFeedbacks] = React.useState<RiderFeedback[]>([])
 
-    const DATA_VERSION = '3.0'
+    const DATA_VERSION = '4.0' // Bumped to regenerate merchants with pending/rejected statuses
     const STORAGE_KEYS = [
         'bazuroo_users',
         'bazuroo_riders',

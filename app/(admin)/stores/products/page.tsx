@@ -44,10 +44,7 @@ export default function ProductValidationPage() {
 
     const storeNames = Object.keys(productsByStore)
 
-    // Initialize all stores as expanded
-    useState(() => {
-        setExpandedStores(storeNames)
-    })
+    // Stores are collapsed by default - users click to expand
 
     const toggleStore = (storeName: string) => {
         setExpandedStores(prev =>
