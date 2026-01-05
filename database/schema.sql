@@ -1,4 +1,4 @@
--- Database Schema Considerations for Bazuroo Admin Panel
+-- Database Schema Considerations for Nova Admin Panel
 -- Targeted Database: PostgreSQL
 
 -- 1. Merchants KYC Table

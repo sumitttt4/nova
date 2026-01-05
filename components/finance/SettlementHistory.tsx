@@ -221,7 +221,7 @@ NET SETTLEMENT:          ₹${settlement.netAmount.toLocaleString()}
 STATUS:                  ${settlement.status.toUpperCase()}
 
 ====================
-This is a system-generated statement from Bazuroo Admin Panel.
+This is a system-generated statement from Nova Admin Panel.
                                 `.trim()
 
                                 // Create blob and download

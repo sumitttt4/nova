@@ -1,4 +1,4 @@
-# 🎯 Bazuroo Admin Panel
+# 🎯 Nova Admin Panel
 
 A comprehensive, modern admin dashboard for managing a food delivery platform. Built with Next.js 16, React 19, and TypeScript.
 
@@ -58,7 +58,7 @@ A comprehensive, modern admin dashboard for managing a food delivery platform. B
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd Bazuroo-AdminPanel-2
+   cd Nova-Admin-Panel
    ```
 
 2. **Install dependencies**
@@ -84,7 +84,7 @@ npm start
 ## 📁 Project Structure
 
 ```
-Bazuroo-AdminPanel-2/
+Nova-Admin-Panel/
 ├── app/                    # Next.js app directory
 │   └── (admin)/           # Admin routes
 │       ├── dashboard/     # Dashboard page

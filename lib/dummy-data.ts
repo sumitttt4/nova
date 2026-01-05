@@ -429,7 +429,7 @@ export function generateStoreFeedbacks(count: number, merchants: Merchant[]): St
         let comment = "";
         if (sentiment === 'positive') {
             comment = faker.helpers.arrayElement([
-                "Sales have increased significantly since joining Bazuroo.",
+                "Sales have increased significantly since joining Nova.",
                 "The admin panel is very easy to use.",
                 "Payouts are always on time. Good job team.",
                 "Support team helped me update my menu quickly.",

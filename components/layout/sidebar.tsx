@@ -64,9 +64,9 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
 
     const getRoleEmail = () => {
         switch (userRole) {
-            case 'seller': return 'partner@bazuroo.com'
-            case 'rider': return 'rider@bazuroo.com'
-            default: return 'admin@bazuroo.com'
+            case 'seller': return 'partner@nova-admin.com'
+            case 'rider': return 'rider@nova-admin.com'
+            default: return 'admin@nova-admin.com'
         }
     }
 
@@ -82,8 +82,8 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
                 <div className="flex w-full items-center gap-3 overflow-hidden">
                     <div className="relative flex aspect-square h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden shadow-sm transition-transform group-hover:scale-105">
                         <img
-                            src="/logo-new.jpg"
-                            alt="Bazuroo"
+                            src="/nova-logo.svg"
+                            alt="Nova"
                             className="object-cover w-full h-full"
                         />
                     </div>
@@ -91,7 +91,7 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
                         "flex flex-col opacity-100 transition-all duration-300",
                         isCollapsed && !isMobile && "opacity-0 w-0 hidden"
                     )}>
-                        <h1 className="truncate text-base font-bold leading-none text-slate-900">Bazuroo</h1>
+                        <h1 className="truncate text-base font-bold leading-none text-slate-900">Nova</h1>
                         <span className="truncate text-[10px] font-medium text-slate-500 uppercase tracking-wider">{getRoleLabel()} Console</span>
                     </div>
                 </div>

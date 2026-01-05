@@ -43,7 +43,7 @@ export default function LoginPage() {
                     <div className="bg-white mx-auto w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 mb-4">
                         <Zap className="h-6 w-6 text-[#26BF42] fill-[#26BF42]" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight text-[#1F2937]">Bazuroo Admin Panel</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-[#1F2937]">Nova Admin Panel</h1>
                     <p className="text-[#6B7280] text-sm mt-1">Sign in to manage operations</p>
                 </div>
 
@@ -57,9 +57,9 @@ export default function LoginPage() {
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-[#26BF42] transition-colors" />
                                 <Input
                                     type="email"
-                                    placeholder="admin@bazuroo.com"
+                                    placeholder="admin@nova-admin.com"
                                     className="pl-10 h-10 bg-white border-[#E5E7EB] text-[#1F2937] placeholder:text-gray-400 focus:border-[#26BF42] focus:ring-[#26BF42] rounded-lg transition-all"
-                                    defaultValue="admin@bazuroo.com"
+                                    defaultValue="admin@nova-admin.com"
                                 />
                             </div>
                         </div>

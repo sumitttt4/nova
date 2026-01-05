@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bazuroo Admin Panel",
+  title: "Nova Admin Panel",
 
 };
 
